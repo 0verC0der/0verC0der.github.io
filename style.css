@@ -1,0 +1,100 @@
+body {
+    font-family: 'Fredoka One', 'Comic Sans MS', cursive; /* Основний шрифт */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background: url('images/background_for_page.png');
+    background-size: cover;
+    font-size: 24px; /* Розмір тексту */
+    color: #ff8c00; /* Помаранчевий колір */
+    text-shadow: 2px 2px 4px #000;   
+}
+header {
+    display: flex;
+    justify-content: space-between; /* Розташування елементів по краях */
+    align-items: center; /* Вирівнювання по вертикалі */
+    padding: 5px;
+    background: linear-gradient(90deg, #ff4500, #ff8c00, #ffd700); /* Градієнт */
+}
+header .logo {
+    position: relative; /* Встановлюємо відносне позиціонування для контейнера */
+    display: inline-block; /* Забезпечує компактність контейнера */
+    width: 200px; /* Ширина контейнера */
+    height: auto; /* Автоматична висота */
+}
+header .logo img {
+    width: 100%; /* Зображення займає всю ширину контейнера */
+    height: auto; /* Збереження пропорцій */
+    display: block; /* Прибирає зайві відступи */
+    position: relative;
+}
+header .header-icons {
+    display: flex;
+    gap: 20px; /* Відступи між іконками */
+    align-items: center; /* Вирівнювання іконок по вертикалі */
+}
+
+
+header .logo-text {
+    position: absolute; /* Абсолютне позиціонування тексту */
+    bottom: 20px; /* Відступ від нижнього краю зображення */
+    left: 50%; /* Вирівнювання по центру */
+    transform: translateX(-50%); /* Центрування тексту по горизонталі */
+    font-size: 48px; /* Розмір тексту */
+    font-family: 'Fredoka One', 'Comic Sans MS', cursive; /* Шрифт */
+    color: #ff8c00; /* Помаранчевий колір */
+    text-shadow: 4px 4px 6px rgba(0, 0, 0, 0.5); /* Тінь для тексту */
+    font-weight: bold; /* Жирний текст */
+    letter-spacing: 2px; /* Розтягування між літерами */
+    text-align: center; /* Вирівнювання тексту */
+    pointer-events: none;
+    -webkit-text-stroke: 1px wheat;
+}
+
+.filter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: linear-gradient(90deg, #ff4500, #ff8c00, #ffd700); /* Вогняний градієнт */
+    padding: 20px;
+    margin: 5%;
+}
+.menu {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 20px;
+    max-width: 1200px; /* Обмеження ширини */
+    margin: 0 auto; /* Центрування */
+}
+.menu-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    text-align: center;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); 
+}
+
+.divCenter{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Висота на всю сторінку */
+    background-color: rgba(255, 255, 255, 0.8); /* Напівпрозорий фон */
+    border-radius: 10px; /* Закруглені кути */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тінь */
+}
+.icon{
+    color: wheat;
+    width: 50px;
+    height: auto;
+}
+
+.cls-3{fill:#ff8c00}
+
+.cls-4{fill:#ffd700}
