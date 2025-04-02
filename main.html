@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taste - Доставка їжі</title>
+    <!-- Підключення Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka One', 'Comic Sans MS', cursive; /* Основний шрифт */
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background: url('images/background_for_page.png');
+            background-size: cover;
+            font-size: 24px; /* Розмір тексту */
+            color: #ff8c00; /* Помаранчевий колір */
+            text-shadow: 2px 2px 4px #000;   
+        }
+        header {
+            display: flex;
+            justify-content: space-between; /* Розташування елементів по краях */
+            align-items: center; /* Вирівнювання по вертикалі */
+            padding: 5px;
+            background: linear-gradient(90deg, #ff4500, #ff8c00, #ffd700); /* Градієнт */
+        }
+        header .logo {
+            position: relative; /* Встановлюємо відносне позиціонування для контейнера */
+            display: inline-block; /* Забезпечує компактність контейнера */
+            width: 200px; /* Ширина контейнера */
+            height: auto; /* Автоматична висота */
+        }
+        header .logo img {
+            width: 100%; /* Зображення займає всю ширину контейнера */
+            height: auto; /* Збереження пропорцій */
+            display: block; /* Прибирає зайві відступи */
+            position: relative;
+        }
+        header .header-icons {
+            display: flex;
+            gap: 20px; /* Відступи між іконками */
+            align-items: center; /* Вирівнювання іконок по вертикалі */
+        }
+
+        
+        header .logo-text {
+            position: absolute; /* Абсолютне позиціонування тексту */
+            bottom: 20px; /* Відступ від нижнього краю зображення */
+            left: 50%; /* Вирівнювання по центру */
+            transform: translateX(-50%); /* Центрування тексту по горизонталі */
+            font-size: 48px; /* Розмір тексту */
+            font-family: 'Fredoka One', 'Comic Sans MS', cursive; /* Шрифт */
+            color: #ff8c00; /* Помаранчевий колір */
+            text-shadow: 4px 4px 6px rgba(0, 0, 0, 0.5); /* Тінь для тексту */
+            font-weight: bold; /* Жирний текст */
+            letter-spacing: 2px; /* Розтягування між літерами */
+            text-align: center; /* Вирівнювання тексту */
+            pointer-events: none;
+            -webkit-text-stroke: 1px wheat;
+        }
+        
+        .filter {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #ff4500, #ff8c00, #ffd700); /* Вогняний градієнт */
+            padding: 20px;
+            margin: 5%;
+        }
+        .menu {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 20px;
+            max-width: 1200px; /* Обмеження ширини */
+            margin: 0 auto; /* Центрування */
+        }
+        .menu-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            text-align: center;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); 
+        }
+        .icon{
+            color: wheat;
+            width: 50px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+                <a href="#item1"><img src="images/logo.png" alt="logo"></a>
+            <span class="logo-text">TASTE</span>
+        </div>
+        
+        <div class="header-icons">
+             
+            <a href="#item2">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" xml:space="preserve">
+                    <path fill="#ff8c00" d="M720.588 215.41H175.815c-.479 0-.844.114-1.293.146l-6.636-32.5c-1.15-5.632-1.284-14.532-4.025-19.711-6.324-11.946-29.871-16.682-41.439-21.677l-57.946-25.022C53.572 111.937 44.063 128 55.063 132.75l45.448 19.625c14.461 6.244 30.679 16.268 46.222 20.477-.09 3.718 1.833 8.619 2.554 12.15l9.055 44.348 4.828 23.644v.095l48.752 238.761a25.26 25.26 0 0 0 1.652 7.995l1.25 6.122 15.32 75.029c.811 3.971 5.101 6.846 8.992 6.846h436.53c12.001 0 12.02-18.65 0-18.65H246.73l-10.447-51.164c2.137.42 4.348.66 6.623.66h.26l421.849-23.627.21-.016c23.012-1.819 27.693-14.891 32.091-42.199l52.508-207.036v-1.163c0-16.121-13.113-29.237-29.236-29.237zm-573.883-43.057c-.001.01.002.022.001.031-3.37-2.473.454-6.072-.001-.031zm532.43 276.311-.168.82c-4.162 25.992-6.279 26.265-15.099 26.962l-421.189 23.59c-4.649-.073-9.454-2.398-11.303-6.04l-.827-4.051v-.086L181.807 251.13c-.109-3.802-.811-7.652-1.493-11.388-.305-1.685-.701-3.866-.929-5.682h541.203c5.505 0 10.044 4.223 10.541 9.6l-51.994 205.004zM399.734 688.82c0-31.06-25.271-56.328-56.328-56.328s-56.328 25.268-56.328 56.328 25.271 56.328 56.328 56.328 56.328-25.268 56.328-56.328zm-94.006 0c0-20.776 16.902-37.678 37.678-37.678 20.777 0 37.678 16.902 37.678 37.678s-16.902 37.678-37.678 37.678c-20.776 0-37.678-16.901-37.678-37.678zM616.109 688.82c0-31.06-25.271-56.328-56.328-56.328-31.058 0-56.328 25.268-56.328 56.328s25.271 56.328 56.328 56.328c31.057 0 56.328-25.268 56.328-56.328zm-94.006 0c0-20.776 16.902-37.678 37.678-37.678 20.777 0 37.678 16.902 37.678 37.678s-16.902 37.678-37.678 37.678c-20.777 0-37.678-16.901-37.678-37.678z"/>
+                    <g fill="#ff8c00">
+                        <path d="M445.736 175.951c.106 11.995 18.757 12.024 18.65 0l-.675-76.252c-.106-11.995-18.756-12.024-18.65 0l.675 76.252zM454.499 54.852c-12.001 0-12.021 18.65 0 18.65 12.001 0 12.02-18.65 0-18.65zM563.195 124.23l-53.441 54.395c-8.419 8.569 4.759 21.767 13.187 13.188l53.441-54.395c8.419-8.57-4.759-21.767-13.187-13.188zM594.986 115.11c12.001 0 12.02-18.65 0-18.65-12.001 0-12.02 18.65 0 18.65zM333.108 137.984l54.395 53.441c8.569 8.419 21.767-4.759 13.187-13.188l-54.395-53.441c-8.569-8.419-21.767 4.759-13.187 13.188zM314.663 115.517c12.001 0 12.02-18.65 0-18.65-12.001 0-12.02 18.65 0 18.65z"/>
+                    </g>
+                    <path fill="#ffd700" d="m679.135 448.664-.168.82c-4.162 25.992-6.279 26.265-15.099 26.962l-421.189 23.59c-4.649-.073-9.454-2.398-11.303-6.04l-.827-4.051v-.086L181.807 251.13c-.109-3.802-.811-7.652-1.493-11.388-.305-1.685-.701-3.866-.929-5.682h541.203c5.505 0 10.044 4.223 10.541 9.6l-51.994 205.004z"/>
+                    <circle fill="#ff8c00" cx="343.406" cy="688.82" r="37.678"/>
+                    <circle fill="#ff8c00" cx="559.781" cy="688.82" r="37.678"/>
+                </svg>     
+            </a>
+            <a href="#item3"> 
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                    <defs>
+                        <style>
+                            .cls-3{fill:#ff8c00}.cls-4{fill:#ffd700}
+                        </style>
+                    </defs>
+                    <g id="User_profile" data-name="User profile">
+                        <path d="M47 24A23 23 0 1 1 12.81 3.91 23 23 0 0 1 47 24z" style="fill:#ff8c00"/>
+                        <path d="M47 24a22.91 22.91 0 0 1-8.81 18.09A22.88 22.88 0 0 1 27 45C5.28 45-4.37 17.34 12.81 3.91A23 23 0 0 1 47 24z" style="fill:#ffc400"/>
+                        <path class="cls-3" d="M39.2 35.39a19 19 0 0 1-30.4 0 17 17 0 0 1 10.49-8.73 8.93 8.93 0 0 0 9.42 0 17 17 0 0 1 10.49 8.73z"/>
+                        <path class="cls-4" d="M39.2 35.39a19 19 0 0 1-4.77 4.49 19 19 0 0 1-15.13-1 7.08 7.08 0 0 1-.51-12.18c.1-.07 0-.05.5-.05a9 9 0 0 0 9.42 0 17 17 0 0 1 10.49 8.74z"/>\
+                        <path class="cls-3" d="M33 19a9 9 0 1 1-12.38-8.34A9 9 0 0 1 33 19z"/>
+                        <path class="cls-4" d="M33 19a9 9 0 0 1-2.6 6.33c-9.13 3.74-16.59-7.86-9.78-14.67A9 9 0 0 1 33 19z"/>
+                    </g>
+                </svg>
+            </a> 
+            <a href="#item4">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="655.359" height="655.359" style="shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;fill-rule:evenodd;clip-rule:evenodd" viewBox="0 0 6.827 6.827">
+                    <path d="M3.413.853c.707 0 1.347.287 1.81.75.464.463.75 1.103.75 1.81 0 .707-.286 1.347-.75 1.81a2.552 2.552 0 0 1-1.81.75 2.552 2.552 0 0 1-1.81-.75 2.552 2.552 0 0 1-.75-1.81c0-.707.287-1.347.75-1.81a2.552 2.552 0 0 1 1.81-.75z" style="fill:#ffc400"/>
+                    <path d="M3.413 1.814a.425.425 0 0 1 .302.728.425.425 0 0 1-.728-.302.425.425 0 0 1 .426-.426zM3.082 2.88h.663c.059 0 .107.048.107.107v1.919a.107.107 0 0 1-.107.107h-.663a.107.107 0 0 1-.107-.107v-1.92c0-.058.048-.106.107-.106z" style="fill:#ff8c00"/>
+                    <g>
+                        <path d="M3.413.853v5.12a2.552 2.552 0 0 1-1.81-.75 2.552 2.552 0 0 1-.75-1.81c0-.707.287-1.347.75-1.81a2.552 2.552 0 0 1 1.81-.75z" style="fill:#ffc400" />
+                        <path d="M3.413 1.814v.853a.425.425 0 0 1-.301-.728.425.425 0 0 1 .301-.125zm0 1.066v2.133h-.331a.107.107 0 0 1-.107-.107v-1.92c0-.058.048-.106.107-.106h.331z" style="fill:#ff8c00" "/>
+                    </g>
+                    <path style="fill:none" d="M0 0h6.827v6.827H0z"/>
+                </svg>   
+            </a> 
+        </div>
+    </header>
+    <div class="filter">
+        <div>ФІЛЬТР ПОШУКУ</div>
+        <div>
+            ЦІНА <input type="range" min="0" max="100" value="50">
+        </div>
+    </div>
+    <div class="menu">
+        
+        <div class="menu-item">елемент меню</div>
+        <div class="menu-item">елемент меню</div>
+        <div class="menu-item">елемент меню</div>
+        <div class="menu-item">елемент меню</div>
+        <div class="menu-item">елемент меню</div>
+        <div class="menu-item">елемент меню</div>
+    </div>
+</body>
+</html>
