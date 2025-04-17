@@ -7,8 +7,11 @@ body {
     background-size: cover;
     font-size: 24px; /* Розмір тексту */
     color: #ff8c00; /* Помаранчевий колір */
-    text-shadow: 2px 2px 4px #000;   
-}
+    text-shadow: 2px 2px 4px #000;
+    transition: background-position 1s ease-out; /* Анімація переходу фону */
+    background-position: center; /* Центрування фону */
+    background-repeat: repeat-y;
+}  
 header {
     display: flex;
     justify-content: space-between; /* Розташування елементів по краях */
