@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        :root {
+            --card: #7db21b;
+        }
+
+        .card {
+            background: var(--card);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Weather App</h1>
+        <nav class="language-selector" aria-label="Language Selector">
+            <button id="lang-uk-btn" aria-pressed="false">uk</button>
+            <button id="lang-en-btn" aria-pressed="true">en</button>
+        </nav>
+    </header>
+
+    <main>
+        <div id="searchDiv" class="search-container">
+            <form role="search" id="searchForm" aria-label="Search for a city">
+                <input id="cityInput" type="text" placeholder="Enter city name" autocomplete="off" role="combobox"
+                    aria-autocomplete="list" aria-expanded="false" aria-controls="cityListbox" aria-activedescendant=""
+                    aria-describedby="comboHint liveStatus" aria-label="City name">
+                <ul id="cityListbox" role="listbox" class="listbox" hidden></ul>
+                <button id="search-btn">Search</button>
+                <div id="comboHint" class="sr-only"></div>
+                <div id="liveStatus" class="sr-only" aria-live="polite"></div>
+            </form>
+        </div>
+
+        <div id="currentGeoLocationDiv">
+            <button id="geoloc-btn">Geolocation</button>
+        </div>
+
+        <div id="weatherInfoDiv" class="card">
+            <h2 id="cityName">City Name</h2>
+            <p id="temperature">Temperature: --°C</p>
+            <p id="humidity">Humidity: --%</p>
+            <p id="windSpeed">Wind Speed: -- m/s</p>
+        </div>
+
+        <section class="card">
+            <div id="descriptionDiv">
+                <p>Detailed Description: --</p>
+            </div>
+        </section>
+
+        <section id="forecastSection">
+            <div id="forecastDiv">
+                <h3>5-Day Forecast</h3>
+                <div id="forecastContainer">
+                    <!-- Forecast items will be dynamically added here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <noscript>Для роботи застосунку потрібен JavaScript.</noscript>
+    </footer>
+
+    <script>
+        // DOM
+        const input = document.getElementById('cityInput');
+        const listbox = document.getElementById('cityListbox');
+        const statusEl = document.getElementById('liveStatus');
+
+        //variables
+        let activeIndex = -1; // індекс активного елемента
+        let cache = new Map(); // простенький кеш на основі Map
+        let abortCtrl = null; // простий контроллер переривання
+        let lang = 'en';
+
+        // Internationalization (i18n) configuration
+        const I18n = {
+            en: { // англійська
+                title: 'Weather App',
+                placeholder: "Enter city name",
+                search: "Search",
+                geoloc: "Geolocation",
+                temp: 'Temperature',
+                desc: 'Description',
+                humidity: "Humidity",
+                wind: "Wind Speed",
+                detailed: "Detailed Description",
+                forecast: "5-Day Forecast",
+                comboHint: "Use arrow keys to navigate suggestions, Enter to choose, Escape to close",
+                loading: "Loading...",
+                none: "No results found",
+                results: (n) => `${n} results found`,
+                error: 'Something went wrong'
+            },
+            uk: { // українська
+                title: 'Погода',
+                placeholder: "Введіть ім'я міста ",
+                search: "Пошук",
+                geoloc: "Геолокація",
+                temp: 'Температура',
+                desc: 'Опис',
+                humidity: "Вологість",
+                wind: "Швидкість вітру",
+                detailed: "Детальний опис",
+                forecast: "5-ти денний прогнос",
+                comboHint: "Використовуйте клавіші стрілок, щоб обрати результат пошуку. Клавіша Enter обрати, Esc - закрити",
+                loading: "Завантаження...",
+                none: "Не знайдено жодних результатів",
+                results: (n) => `${n} результатів знайдено`,
+                error: 'Щось пішло не так'
+            }
+        };
+
+
+        const GEO_API_URL = (query, lang) => `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=${lang}&format=json`;
+
+
+        const screen = (s) => s.replace(/[.*+?${}()|[\]\\]/g, '\\$&');
+
+        function openListBox() { if (listbox.hidden) { listbox.hidden = false; input.setAttribute('aria-expanded', 'true'); } }
+        function closeListBox() { if (!listbox.hidden) { listbox.hidden = true; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); activeIndex = -1; } }
+        function announce(msg) { statusEl.textContent = msg; }
+
+        const waiter = (fn, ms) => {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => fn(...args), ms);
+            };
+        }
+
+
+        function renderListBox(items, query) {
+            listbox.innerHTML = '';
+            options = items;
+            const CurrentLang = I18n[lang];
+            if (!items.length) {
+                const li = document.createElement('li');
+                li.role = 'option';
+                li.className = 'option';
+                li.setAttribute('aria-disabled', 'true');
+                li.textContent = CurrentLang.none;
+                listbox.appendChild(li);
+                openListBox();
+                announce(CurrentLang.none);
+                return;
+            }
+            const regex = new RegExp(screen(query), 'i');
+            items.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.role = 'option';
+                li.id = `option-${index}`;
+                li.className = 'option';
+                li.dataset.label = item.label;
+                li.dataset.lat = item.lat;
+                li.dataset.lon = item.lon;
+                li.innerHTML = item.label.replace(regex, match => '<mark>' + match + '</mark>');
+                listbox.appendChild(li);
+            })
+            announce(CurrentLang.results(items.length));
+            openListBox();
+            setActive(0);
+        }
+
+        function setActive(idx) { // функція для встановалення активного елемента
+            const nodeList = listbox ? listbox.querySelectorAll('.option[role="option"]') : null;
+            const opts = Array.from(nodeList || []);
+            if (!opts.length) return;
+            idx = Math.max(0, Math.min(idx, opts.length - 1));
+            if (activeIndex >= 0 && opts[activeIndex]) opts[activeIndex].dataset.active = 'false';
+            activeIndex = idx;
+            const el = opts[activeIndex];
+            el.dataset.active = 'true';
+            input.setAttribute('aria-activedescendant', el.id);
+            el.scrollIntoView({ block: 'nearest' });
+        }
+
+        const onInput = waiter(async (event) => {
+            const query = event.target.value.trim();
+
+            if (query.length < 2) { closeListBox(); return; }
+            const cacheKey = `${query.toLowerCase()}|${lang}`;
+
+            if (cache.has(cacheKey)) { renderListBox(cache.get(cacheKey), query); return; }
+            abortCtrl?.abort();
+            abortCtrl = new AbortController();
+            input.setAttribute('aria-busy', 'true');
+            announce(I18n[lang].loading);
+
+            try {
+                const response = await fetch(GEO_API_URL(query, lang), { signal: abortCtrl.signal })
+
+                if (!response.ok) throw new Error('HTTP error' + response.status);
+
+                const data = await response.json();
+                const seen = new Set();
+                const items = (data.results || []).map(r => {
+                    const parts = [r.name, r.admin1, r.country].filter(Boolean);
+                    const label = parts.join(', ');
+                    const key = parts.join('|').toLowerCase();
+                    return { key, label, lat: r.latitude, lon: r.longitude };
+                }).filter(it => { if (seen.has(it.key)) return false; seen.add(it.key); return true; });
+                cache.set(cacheKey, items);
+                renderListBox(items, query);
+            }
+            catch (e) {
+                if (err.name !== 'AbortError') {
+                    console.error(e);
+                    renderOptions([], query);
+                }
+            }
+            finally {
+                input.removeAttribute('aria-busy');
+            }
+
+        }, 200);
+
+        //обрати індекс для списку елементів
+        function selectIndex(idx) {
+            const el = listbox.querySelector(`#option-${idx}`); if (!el || el.getAttribute('aria-disabled') === 'true') return;
+            const label = el.dataset.label; const lat = Number(el.dataset.lat); const lon = Number(el.dataset.lon);
+            input.value = label; closeListBox(); fetchAndRenderWeather(lat, lon, label);
+        }
+
+        function fetchAndRenderWeather(lat, lon, label) {
+            // Тут буде логіка для отримання та відображення погоди
+            console.log(`Fetching weather for ${label} at (${lat}, ${lon})`);
+        }
+
+        input.addEventListener('input', onInput);
+    </script>
+
+</body>
+
+</html>
