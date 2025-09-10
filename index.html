@@ -7,11 +7,40 @@
     <title>Weather App</title>
     <style>
         :root {
-            --card: #7db21b;
+            --card: #93978c;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --border: #aec8e1;
         }
 
-        .card {
-            background: var(--card);
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 1rem;
+            background: #f0f4f8;
+            color: #333;
+        }
+
+        header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .forecastDiv {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            flex-direction: row;
+            gap: 1rem;
         }
 
         .option[data-active="true"] {
@@ -19,12 +48,55 @@
             outline-offset: 0;
             background: #e7f0fb;
         }
+
+        button {
+            box-shadow: var(--shadow);
+        }
+
+        .language-selector button[aria-pressed="true"] {
+            background: #0969da;
+            color: white;
+        }
+
+        button {
+            cursor: pointer;
+            box-shadow: var(--shadow);
+        }
+
+        button.primary {
+            border-radius: .4rem;
+            border: 1px solid var(--border);
+            background: #8aaacf;
+            color: white;
+        }
+
+        button:hover {
+            background: #0969da;
+        }
+
+        button.secondary {
+            border-radius: .4rem;
+            border: 1px solid #0969da;
+            background: #e7f0fb;
+            color: #0969da;
+        }
     </style>
 </head>
 
 <body>
     <header>
         <h1 id="appTitle">Weather App</h1>
+        <div id="searchDiv" class="search-container">
+            <form role="search" id="searchForm" aria-label="Search for a city">
+                <input id="cityInput" type="text" placeholder="Enter city name" autocomplete="off" role="combobox"
+                    aria-autocomplete="list" aria-expanded="false" aria-controls="cityListbox" aria-activedescendant=""
+                    aria-describedby="comboHint liveStatus" aria-label="City name">
+                <ul id="cityListbox" role="listbox" class="listbox" hidden></ul>
+                <button id="search-btn" class="primary">Search</button>
+                <div id="comboHint" class="sr-only"></div>
+                <div id="liveStatus" class="sr-only" aria-live="polite"></div>
+            </form>
+        </div>
         <nav class="language-selector" aria-label="Language Selector">
             <button id="lang-uk-btn" aria-pressed="false">uk</button>
             <button id="lang-en-btn" aria-pressed="true">en</button>
@@ -32,39 +104,36 @@
     </header>
 
     <main>
-        <div id="searchDiv" class="search-container">
-            <form role="search" id="searchForm" aria-label="Search for a city">
-                <input id="cityInput" type="text" placeholder="Enter city name" autocomplete="off" role="combobox"
-                    aria-autocomplete="list" aria-expanded="false" aria-controls="cityListbox" aria-activedescendant=""
-                    aria-describedby="comboHint liveStatus" aria-label="City name">
-                <ul id="cityListbox" role="listbox" class="listbox" hidden></ul>
-                <button id="search-btn">Search</button>
-                <div id="comboHint" class="sr-only"></div>
-                <div id="liveStatus" class="sr-only" aria-live="polite"></div>
-            </form>
-        </div>
 
-        <div id="currentGeoLocationDiv">
-            <button id="geoloc-btn">Geolocation</button>
-        </div>
-
-        <div id="weatherInfoDiv" class="card">
+        <div class="weatherMain">
             <h2 id="cityName">City Name</h2>
-            <p id="temperature">Temperature:</p>
-            <p id="tempValue">--°C</p>
-            <p id="humidity">Humidity:</p>
-            <p id="humidityValue">--%</p>
-            <p id="windSpeed">Wind Speed:</p>
-            <p id="windSpeedValue">-- m/s</p>
-            <p id="description">Description:</p>
-            <p id="descriptionValue">--</p>
+            <div id="currentGeoLocationDiv">
+                <button id="geoloc-btn" class="secondary">Geolocation</button>
+            </div>
+
+
+
+            <img id="weatherIcon" src="" alt="">
+
+            <div id="weatherInfoDiv" class="card">
+
+                <p id="temperature">Temperature:</p>
+                <p id="tempValue">--°C</p>
+                <p id="humidity">Humidity:</p>
+                <p id="humidityValue">--%</p>
+                <p id="windSpeed">Wind Speed:</p>
+                <p id="windSpeedValue">-- m/s</p>
+                <p id="description">Description:</p>
+                <p id="descriptionValue">--</p>
+            </div>
         </div>
+
 
 
 
         <section id="forecastSection">
+            <h3 id='forecastTitle'>5-Day Forecast</h3>
             <div id="forecastDiv">
-                <h3 id='forecastTitle'>5-Day Forecast</h3>
                 <div id="forecastContainer">
                     <!-- Forecast items will be dynamically added here -->
                 </div>
@@ -95,7 +164,7 @@
         const humidityValue = document.getElementById('humidityValue');
         const windSpeedValue = document.getElementById('windSpeedValue');
         const descriptionValue = document.getElementById('descriptionValue');
-
+        const weatherIcon = document.getElementById('weatherIcon');
         const forecastTitle = document.getElementById('forecastTitle');
         const btnUk = document.getElementById('lang-uk-btn');
         const btnEn = document.getElementById('lang-en-btn');
@@ -112,18 +181,59 @@
             1: { en: 'Mainly clear', uk: 'Переважно ясно' },
             2: { en: 'Partly cloudy', uk: 'Мінлива хмарність' },
             3: { en: 'Overcast', uk: 'Похмуро' },
-            45: { en: 'Fog', uk: 'Туман' }, 48: { en: 'Depositing rime fog', uk: 'Паморозь' },
-            51: { en: 'Light drizzle', uk: 'Легкий мряка' }, 53: { en: 'Moderate drizzle', uk: 'Мряка' }, 55: { en: 'Dense drizzle', uk: 'Сильна мряка' },
-            56: { en: 'Light freezing drizzle', uk: 'Легкий паморозний дощ' }, 57: { en: 'Dense freezing drizzle', uk: 'Сильний паморозний дощ' },
-            61: { en: 'Slight rain', uk: 'Невеликий дощ' }, 63: { en: 'Moderate rain', uk: 'Дощ' }, 65: { en: 'Heavy rain', uk: 'Сильний дощ' },
-            66: { en: 'Light freezing rain', uk: 'Невеликий крижаних дощ' }, 67: { en: 'Heavy freezing rain', uk: 'Сильний крижаних дощ' },
-            71: { en: 'Slight snow fall', uk: 'Невеликий сніг' }, 73: { en: 'Moderate snow fall', uk: 'Сніг' }, 75: { en: 'Heavy snow fall', uk: 'Сильний сніг' },
+            45: { en: 'Fog', uk: 'Туман' },
+            48: { en: 'Depositing rime fog', uk: 'Паморозь' },
+            51: { en: 'Light drizzle', uk: 'Легкий мряка' },
+            53: { en: 'Moderate drizzle', uk: 'Мряка' },
+            55: { en: 'Dense drizzle', uk: 'Сильна мряка' },
+            56: { en: 'Light freezing drizzle', uk: 'Легкий паморозний дощ' },
+            57: { en: 'Dense freezing drizzle', uk: 'Сильний паморозний дощ' },
+            61: { en: 'Slight rain', uk: 'Невеликий дощ' },
+            63: { en: 'Moderate rain', uk: 'Дощ' },
+            65: { en: 'Heavy rain', uk: 'Сильний дощ' },
+            66: { en: 'Light freezing rain', uk: 'Невеликий крижаних дощ' },
+            67: { en: 'Heavy freezing rain', uk: 'Сильний крижаних дощ' },
+            71: { en: 'Slight snow fall', uk: 'Невеликий сніг' },
+            73: { en: 'Moderate snow fall', uk: 'Сніг' },
+            75: { en: 'Heavy snow fall', uk: 'Сильний сніг' },
             77: { en: 'Snow grains', uk: 'Сніжна крупа' },
-            80: { en: 'Rain showers: slight', uk: 'Короткочасні дощі: слабкі' }, 81: { en: 'Rain showers: moderate', uk: 'Короткочасні дощі: помірні' }, 82: { en: 'Rain showers: violent', uk: 'Зливи: сильні' },
-            85: { en: 'Snow showers: slight', uk: 'Снігопад: слабкий' }, 86: { en: 'Snow showers: heavy', uk: 'Снігопад: сильний' },
+            80: { en: 'Rain showers: slight', uk: 'Короткочасні дощі: слабкі' },
+            81: { en: 'Rain showers: moderate', uk: 'Короткочасні дощі: помірні' },
+            82: { en: 'Rain showers: violent', uk: 'Зливи: сильні' },
+            85: { en: 'Snow showers: slight', uk: 'Снігопад: слабкий' },
+            86: { en: 'Snow showers: heavy', uk: 'Снігопад: сильний' },
             95: { en: 'Thunderstorm', uk: 'Гроза' },
             96: { en: 'Thunderstorm with slight hail', uk: 'Гроза з невеликим градом' },
             99: { en: 'Thunderstorm with heavy hail', uk: 'Гроза з сильним градом' },
+        };
+
+        const ICON_BY_WMO = {
+            0: 'sunny-day-16458.svg',
+            1: 'sun-and-blue-cloud-16460.svg',
+            2: 'blue-clouds-and-sun-16461.svg',
+            3: 'cloudy-weather-16459.svg',
+            45: 'fog-svgrepo-com',
+            51: 'rainy-day-16464.svg',
+            55: 'rainy-day-16464.svg',
+            56: 'rainy-day-16464.svg',
+            57: 'downpour-rain-and-blue-cloud-16463.svg',
+            61: 'rainy-day-16464.svg',
+            63: 'rainy-day-and-blue-cloud-16462.svg',
+            65: 'downpour-rain-and-blue-cloud-16463.svg',
+            66: 'hail-and-winter-cloud-16490.svg',
+            67: 'hail-and-blue-cloud-16491.svg',
+            71: 'winter-snowfall-16473.svg',
+            73: 'winter-snowfall-16473.svg',
+            75: 'snowy-weather-16472.svg',
+            77: 'winter-snowfall-16473.svg',
+            80: 'rainy-day-16464.svg',
+            81: 'rainy-day-16464.svg',
+            82: 'downpour-rain-and-blue-cloud-16463.svg',
+            85: 'winter-snowfall-16473.svg',
+            86: 'snowy-weather-16472.svg',
+            95: 'thunder.svg',
+            96: 'lightning-and-rainy-weather-16465.svg',
+            99: 'lightning-and-rainy-weather-16465.svg',
         };
 
         const weatherText = (code, lang) => (WMO[code]?.[lang]) || String(code);
@@ -344,17 +454,23 @@
             }
             humidityValue.textContent = `${hum !== null ? Math.round(hum) + '%' : '--'}`;
 
+            // Іконка погоди
+            const iconName = ICON_BY_WMO[code] || ICON_BY_WMO[0];
+            weatherIcon.src = `svg/${iconName}`;
+            weatherIcon.alt = weatherText(code, lang);
+
             const daily = data.daily;
             const forecastContainer = document.getElementById('forecastContainer');
             if (daily) {
                 for (let i = 0; i < daily.time.length; i++) {
                     const day = document.createElement('div'); day.className = 'forecast-day';
                     const dayCode = daily.weathercode[i];
-
+                    day.innerHTML = '';
                     day.innerHTML = `
                         <div class="muted"> ${ftmDate(daily.time[i], lang, data.timezone)} </div>
-                        <div> ${weatherText(dayCode, lang)} </div>
-                        <div class="row"><strong>${Math.round(daily.temperature_2m_max[i])}°C</strong> / ${Math.round(daily.temperature_2m_min[i])}°C </div>
+                            <div> ${weatherText(dayCode, lang)} </div>
+                            <div> <img src="svg/${ICON_BY_WMO[dayCode] || ICON_BY_WMO[0]}" alt="${weatherText(dayCode, lang)}" width="36" height="36"> </div>
+                            <div class="row"><strong>${Math.round(daily.temperature_2m_max[i])}°C</strong> / ${Math.round(daily.temperature_2m_min[i])}°C </div>
                         <div class="muted"> ${daily.precipitation_sum?.[i] ?? 0} mm </div>
                     `;
                     forecastContainer.appendChild(day);
