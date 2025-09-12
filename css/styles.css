@@ -1,0 +1,75 @@
+:root {
+    --card: #93978c;
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    --border: #aec8e1;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 1rem;
+    background: #f0f4f8;
+    color: #333;
+    background-image: url('/svg/vecteezy_silhouette-of-nature-landscape-mountains-forest-in_25745154.svg');
+    background-size: cover;
+}
+
+header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.forecastContainer {
+    display: flex;
+
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.option[data-active="true"] {
+    outline: 2px solid #0969da;
+    outline-offset: 0;
+    background: #e7f0fb;
+}
+
+button {
+    box-shadow: var(--shadow);
+}
+
+.language-selector button[aria-pressed="true"] {
+    background: #0969da;
+    color: white;
+}
+
+button {
+    cursor: pointer;
+    box-shadow: var(--shadow);
+}
+
+button.primary {
+    border-radius: .4rem;
+    border: 1px solid var(--border);
+    background: #8aaacf;
+    color: white;
+}
+
+button:hover {
+    background: #0969da;
+}
+
+button.secondary {
+    border-radius: .4rem;
+    border: 1px solid #0969da;
+    background: #e7f0fb;
+    color: #0969da;
+}
