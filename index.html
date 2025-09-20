@@ -9,6 +9,8 @@
 </head>
 
 <body>
+    <weather-scene id="weather-scene" src="./svg/scene.svg"></weather-scene>
+
     <header>
         <h1 id="appTitle">Weather App</h1>
         <div id="searchDiv" class="search-container">
@@ -28,12 +30,15 @@
         </nav>
     </header>
 
+
+
     <main>
+        <h2 id="cityName"><strong>--</strong></h2>
+        <div id="currentGeoLocationDiv">
+            <button id="geoloc-btn" class="secondary">Geolocation</button>
+        </div>
         <div class="weatherMain">
-            <h2 id="cityName"><strong>--</strong></h2>
-            <div id="currentGeoLocationDiv">
-                <button id="geoloc-btn" class="secondary">Geolocation</button>
-            </div>
+
 
             <img id="weatherIcon" src="" alt="">
             <div id="weatherInfoDiv" class="card">
@@ -55,11 +60,15 @@
                 </div>
             </div>
         </section>
+
     </main>
     <footer>
         <noscript>Для роботи застосунку потрібен JavaScript.</noscript>
     </footer>
-    <script src="/js/app.js"></script>
+
+
+    <script type='module' src="/js/app.js"></script>
+
 </body>
 
 </html>

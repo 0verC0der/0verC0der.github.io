@@ -1,3 +1,6 @@
+import { WeatherBackground } from './classWeatherBackground.js'
+
+
 const html = document.documentElement;
 const input = document.getElementById('cityInput');
 const listbox = document.getElementById('cityListbox');
@@ -20,6 +23,10 @@ const forecastTitle = document.getElementById('forecastTitle');
 const forecastContainer = document.getElementById('forecastContainer');
 const btnUk = document.getElementById('lang-uk-btn');
 const btnEn = document.getElementById('lang-en-btn');
+
+
+const scene = document.getElementById('weather-scene');
+
 
 //variables
 let activeIndex = -1; // індекс активного елемента
@@ -216,7 +223,7 @@ function getGeolocation() {
 
     }, (err) => {
         console.error(err);
-        alert(err.message || 'Unable to retrieve your location');
+        //alert(err.message || 'Unable to retrieve your location');
     });
 }
 
@@ -318,6 +325,7 @@ async function fetchAndRenderWeather(lat, lon, label) {
         announce(I18n[lang].loading);
         const data = await fetch(FORECAST(lat, lon)).then(r => r.json());
         renderWeather(data, label);
+        console.log(data);
         lastREQ = { lat, lon, data, label };
     }
     catch (e) {
@@ -336,7 +344,6 @@ function renderWeather(data, lable) {
     tempValue.textContent = `${Math.round(cw.temperature)}°C`;
     descriptionValue.textContent = `${weatherText(code, lang)} `;
     windSpeedValue.textContent = `${Math.round(cw.windspeed)} m / s`;
-
     let hum = null;
     const times = data.hourly?.time || [];
     const humidities = data.hourly?.relativehumidity_2m || [];
@@ -352,9 +359,7 @@ function renderWeather(data, lable) {
     weatherIcon.alt = weatherText(code, lang);
 
     const daily = data.daily;
-    console.log(new Intl.DateTimeFormat(
-        lang, { weekday: 'short', day: 'numeric', month: 'short' })
-        .format(new Date()));
+
 
     if (daily) {
         forecastContainer.innerHTML = ``;
@@ -425,6 +430,8 @@ input.addEventListener('keydown', (e) => {
 
 btnUk.addEventListener('click', () => { lang = 'uk'; onLangRefresh(lang); });
 btnEn.addEventListener('click', () => { lang = 'en'; onLangRefresh(lang); });
+
+scene.skyCelestialMovement(0.5);
 
 window.addEventListener('DOMContentLoaded', () => {
     if ('permission' in navigator && navigator.permissions?.query) {
