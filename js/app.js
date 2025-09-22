@@ -7,7 +7,7 @@ const listbox = document.getElementById('cityListbox');
 const statusEl = document.getElementById('liveStatus');
 const geoLocBtn = document.getElementById('geoloc-btn');
 const titleEl = document.getElementById('appTitle');
-const searchBtn = document.getElementById('search-btn');
+
 const searchForm = document.getElementById('searchForm');
 const cityName = document.getElementById('cityName');
 const temperature = document.getElementById('temperature');
@@ -21,9 +21,11 @@ const descriptionValue = document.getElementById('descriptionValue');
 const weatherIcon = document.getElementById('weatherIcon');
 const forecastTitle = document.getElementById('forecastTitle');
 const forecastContainer = document.getElementById('forecastContainer');
+
+//buttons
 const btnUk = document.getElementById('lang-uk-btn');
 const btnEn = document.getElementById('lang-en-btn');
-
+const searchBtn = document.getElementById('search-btn');
 
 const scene = document.getElementById('weather-scene');
 
@@ -35,6 +37,8 @@ let abortCtrl = null; // простий контроллер перериван�
 let lang = 'en';
 let WeatherCode = 0; // код погоди
 let lastREQ = { lat: null, lon: null, data: null, label: null };
+let options;
+
 
 const WMO = {
     0: { en: 'Clear sky', uk: 'Ясно' },
@@ -134,7 +138,7 @@ const I18n = {
     }
 };
 
-
+// API links
 const GEO_API_URL = (query, lang) => `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=${lang}&format=json`;
 const FORECAST = (lat, lon) => `https://api.open-meteo.com/v1/forecast?latitude=${lat}
 &longitude=${lon}&current_weather=true
@@ -143,11 +147,16 @@ const FORECAST = (lat, lon) => `https://api.open-meteo.com/v1/forecast?latitude=
 &windspeed_unit=ms
 &forecast_days=5&timezone=auto`;
 const GEO_REV = (lat, lon, lang) => `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&language=${lang}&format=json`;
+//
+
 
 const screen = (s) => s.replace(/[.*+?${}()|[\]\\]/g, '\\$&');
 
+// listbox render functions
 function openListBox() { if (listbox.hidden) { listbox.hidden = false; input.setAttribute('aria-expanded', 'true'); } }
 function closeListBox() { if (!listbox.hidden) { listbox.hidden = true; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); activeIndex = -1; } }
+//
+
 function announce(msg) { statusEl.textContent = msg; }
 const setPressed = (btn, state) => { btn.setAttribute('aria-pressed', state ? 'true' : 'false'); }
 
@@ -252,7 +261,7 @@ function renderListBox(items, query) {
     items.forEach((item, index) => {
         const li = document.createElement('li');
         li.role = 'option';
-        li.id = `option - ${index} `;
+        li.id = `option-${index}`;
         li.className = 'option';
         li.dataset.label = item.label;
         li.dataset.lat = item.lat;
@@ -265,7 +274,7 @@ function renderListBox(items, query) {
     setActive(0);
 }
 
-function setActive(idx) { // функція для встановалення активного елемента
+function setActive(idx) { // function active element setup
     const nodeList = listbox ? listbox.querySelectorAll('.option[role="option"]') : null;
     const opts = Array.from(nodeList || []);
     if (!opts.length) return;
@@ -277,10 +286,11 @@ function setActive(idx) { // функція для встановалення а
     input.setAttribute('aria-activedescendant', el.id);
     el.scrollIntoView({ block: 'nearest' });
 }
+//
 
+//onInput event
 const onInput = waiter(async (event) => {
     const query = event.target.value.trim();
-
     if (query.length < 2) { closeListBox(); return; }
     const cacheKey = `${query.toLowerCase()}| ${lang} `;
     if (cache.has(cacheKey)) { renderListBox(cache.get(cacheKey), query); return; }
@@ -308,7 +318,7 @@ const onInput = waiter(async (event) => {
     catch (e) {
         if (e.name !== 'AbortError') {
             console.error(e);
-            renderOptions([], query);
+            // renderOptions([], query);
         }
     }
     finally {
@@ -316,15 +326,21 @@ const onInput = waiter(async (event) => {
     }
 
 }, 200);
-
+//
 
 //обрати індекс для списку елементів
 function selectIndex(idx) {
-    const el = listbox.querySelector(`#option-${idx}`); if (!el || el.getAttribute('aria-disabled') === 'true') return;
+
+    const el = listbox.querySelector(`#option-${idx}`);
+    console.log("(selectIndex) Listbox: ", el)
+    if (!el || el.getAttribute('aria-disabled') === 'true') return;
+
     const label = el.dataset.label; const lat = Number(el.dataset.lat); const lon = Number(el.dataset.lon);
     input.value = label; closeListBox(); fetchAndRenderWeather(lat, lon, label);
 }
+//
 
+// Weather render func API
 async function fetchAndRenderWeather(lat, lon, label) {
     try {
         announce(I18n[lang].loading);
@@ -339,6 +355,7 @@ async function fetchAndRenderWeather(lat, lon, label) {
         announce(I18n[lang].error);
     }
 }
+//
 
 function renderWeather(data, lable) {
     const CurrentLang = I18n[lang];
@@ -423,6 +440,8 @@ geoLocBtn.addEventListener('click', () => {
 
 
 input.addEventListener('input', onInput);
+
+//keydown listener
 input.addEventListener('keydown', (e) => {
     console.log(e.key);
     const open = !listbox.hidden; const k = e.key;
@@ -433,6 +452,7 @@ input.addEventListener('keydown', (e) => {
     else if (k === 'Enter') { if (open && activeIndex >= 0) { e.preventDefault(); selectIndex(activeIndex); } }
     else if (k === 'Escape') { if (open) { e.preventDefault(); closeListBox(); } }
 });
+//
 
 btnUk.addEventListener('click', () => { lang = 'uk'; onLangRefresh(lang); });
 btnEn.addEventListener('click', () => { lang = 'en'; onLangRefresh(lang); });
