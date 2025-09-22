@@ -2,6 +2,8 @@ export class WeatherBackground extends HTMLElement {
 
     static get observedAttributes() { return ['src'] };
 
+    #sunTime = null;
+    #clockMs = 60 * 1000; //set update time of sky celestial movement
 
     constructor() {
         super();
@@ -57,6 +59,8 @@ export class WeatherBackground extends HTMLElement {
         this.sun = box.querySelector('#sun');
         this.moon = box.querySelector('#moon');
 
+
+
         this.clouds = box.querySelectorAll('.cloud');
         this.rain = box.querySelectorAll('.rain');
         this.snow = box.querySelectorAll('.snow');
@@ -68,47 +72,85 @@ export class WeatherBackground extends HTMLElement {
         defFunc.forEach(f => f());
     }
 
-    #sceneApplyWeather({
-        timeISO = null,
-        sunriseISO = null,
-        sunsetISO = null,
-        condition = 'clear',
-        cloudiness = null,
-        precipitation = null,
-    }) {
+    sceneApplyWeather(data = null) {
+        if (!data) return;
 
+        if (!this.arc || !this.sun) return this._queue.push(() => this.sceneApplyWeather(data));
+
+        const setTimeToDate = (baseDate, hhmm) => {
+            const d = new Date(baseDate);
+            const [hh, mm] = hhmm.split(':').map(Number);
+            d.setHours(hh, mm, 0, 0);
+            return d;
+        }
+
+        const pickSunTimeForDate = (now, daily) => {
+            const day = now.toLocaleDateString('en-CA'); // YYYY-MM-DD
+            if (!daily || !daily.time) return null;
+            const idx = daily.time.indexOf(day);
+            return idx === -1 ? null : { sunsetISO: daily.sunset[idx], sunriseISO: daily.sunrise[idx] };
+        }
+
+        const now = data?.current_weather?.time ? new Date(data.current_weather.time) : new Date();
+        const sunPickedTime = pickSunTimeForDate(now, data.daily);
+
+        const sunrise = new Date(sunPickedTime.sunriseISO);
+        const sunset = new Date(sunPickedTime.sunsetISO);
+
+        this.#sunTime = { sunrise: sunrise, sunset: sunset }
+
+        const progress = this.#checkDayProgress(now, sunrise, sunset);
+
+        this.#skyCelestialMovement(progress);
     }
 
     //utils
 
     #cutter = (x) => Math.max(0, Math.min(1, x));
 
-    skyCelestialMovement(progress) {
+
+    // sky celestial utils
+
+    #CelestialTick() {
+        if (!this.#sunTime) return;
+
+    }
+
+    #skyCelestialMovement(progress) { //
         if (!this.arc || !this.sun) return this._queue.push(() => this.skyCelestialMovement(progress));
+        this.#centerAnchor(this.sun);
+        this.#centerAnchor(this.moon);
         this.#moveOnArc(this.arc, this.sun, progress);
     }
 
 
-    #moveOnArc(arc, node, progress) {
+    #centerAnchor(node) { // try to center sun and moon sprite
+        if (!node) return;
+        if (!node.__anchor) {
+            node.removeAttribute('transform'); // remove any translate from sprites (node)
+            const b = node.getBBox();
+            node.__anchor = { cx: b.x + b.width / 2, cy: b.y + b.height / 2 };
+        }
+    }
+
+    #checkDayProgress = (now, sunriseISO, sunsetISO) => {
+        if (sunsetISO <= sunriseISO) sunsetISO = new Date(sunsetISO.getTime() + 24 * 3600 * 1000);
+        return this.#cutter((now - sunriseISO) / (sunsetISO - sunriseISO));
+    }
+
+    #moveOnArc(arc, node, progress) { // move sun or moon on invisible arc
         const nwProgress = this.#cutter(progress);
 
         const arcLength = arc.getTotalLength();
         const Position = arc.getPointAtLength(arcLength * nwProgress);
 
-        if (!node.__anchor) {
-            node.removeAttribute('transform');                 // щоб не накопичувався старий translate
-            const b = node.getBBox();                          // центр вмісту у локальних координатах node
-            node.__anchor = { cx: b.x + b.width / 2, cy: b.y + b.height / 2 };
-        }
         const { cx, cy } = node.__anchor;
 
         let translate = `translate(${Position.x - cx}, ${Position.y - cy})`;
 
-        arc.setAttribute('stroke', 'red');
         node.setAttribute('transform', translate);
 
     }
-
 }
 
 

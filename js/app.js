@@ -136,7 +136,12 @@ const I18n = {
 
 
 const GEO_API_URL = (query, lang) => `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=${lang}&format=json`;
-const FORECAST = (lat, lon) => `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max&windspeed_unit=ms&forecast_days=5&timezone=auto`;
+const FORECAST = (lat, lon) => `https://api.open-meteo.com/v1/forecast?latitude=${lat}
+&longitude=${lon}&current_weather=true
+&hourly=cloudcover,relativehumidity_2m
+&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,sunrise,sunset
+&windspeed_unit=ms
+&forecast_days=5&timezone=auto`;
 const GEO_REV = (lat, lon, lang) => `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&language=${lang}&format=json`;
 
 const screen = (s) => s.replace(/[.*+?${}()|[\]\\]/g, '\\$&');
@@ -325,6 +330,7 @@ async function fetchAndRenderWeather(lat, lon, label) {
         announce(I18n[lang].loading);
         const data = await fetch(FORECAST(lat, lon)).then(r => r.json());
         renderWeather(data, label);
+        scene.sceneApplyWeather(data)
         console.log(data);
         lastREQ = { lat, lon, data, label };
     }
@@ -338,7 +344,7 @@ function renderWeather(data, lable) {
     const CurrentLang = I18n[lang];
     cityName.textContent = lable;
     const cw = data.current_weather;
-    console.log(data);
+
     const code = cw.weathercode;
     WeatherCode = code;
     tempValue.textContent = `${Math.round(cw.temperature)}°C`;
@@ -431,7 +437,7 @@ input.addEventListener('keydown', (e) => {
 btnUk.addEventListener('click', () => { lang = 'uk'; onLangRefresh(lang); });
 btnEn.addEventListener('click', () => { lang = 'en'; onLangRefresh(lang); });
 
-scene.skyCelestialMovement(0.5);
+
 
 window.addEventListener('DOMContentLoaded', () => {
     if ('permission' in navigator && navigator.permissions?.query) {
