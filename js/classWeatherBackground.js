@@ -3,7 +3,9 @@ export class WeatherBackground extends HTMLElement {
     static get observedAttributes() { return ['src'] };
 
     #sunTime = null;
-    #clockMs = 60 * 1000; //set update time of sky celestial movement
+    #clockMs = 1000; //set update time of sky celestial movement
+    #timeNow = null;
+    _timer = null;
 
     constructor() {
         super();
@@ -36,6 +38,7 @@ export class WeatherBackground extends HTMLElement {
     }
     //on attribute change
     attributeChangedCallback(n) { if (n === 'src') this.#load(); }
+
 
 
     async #load() {
@@ -91,17 +94,26 @@ export class WeatherBackground extends HTMLElement {
             return idx === -1 ? null : { sunsetISO: daily.sunset[idx], sunriseISO: daily.sunrise[idx] };
         }
 
-        const now = data?.current_weather?.time ? new Date(data.current_weather.time) : new Date();
-        const sunPickedTime = pickSunTimeForDate(now, data.daily);
+        this.#timeNow = data?.current_weather?.time ? new Date(data.current_weather.time) : new Date();
+
+        const sunPickedTime = pickSunTimeForDate(this.#timeNow, data.daily);
 
         const sunrise = new Date(sunPickedTime.sunriseISO);
         const sunset = new Date(sunPickedTime.sunsetISO);
 
         this.#sunTime = { sunrise: sunrise, sunset: sunset }
 
-        const progress = this.#checkDayProgress(now, sunrise, sunset);
+        const progress = this.#checkDayProgress(this.#timeNow, sunrise, sunset);
 
         this.#skyCelestialMovement(progress);
+
+        if (this._timer) clearInterval(this._timer); //check if timer exist: true - reset. false - skip
+
+        this._timer = setInterval(() => {
+            this.#timeNow = new Date(this.#timeNow.getTime() + this.#clockMs);
+            this.#CelestialTick();
+        }, this.#clockMs)
+
     }
 
     //utils
@@ -112,11 +124,15 @@ export class WeatherBackground extends HTMLElement {
     // sky celestial utils
 
     #CelestialTick() {
-        if (!this.#sunTime) return;
+        if (!this.#sunTime || !this.#timeNow) return;
+        const now = this.#timeNow
+        const { sunrise, sunset } = this.#sunTime;
 
+        const progress = this.#checkDayProgress(now, sunrise, sunset)
+        this.#skyCelestialMovement(progress)
     }
 
-    #skyCelestialMovement(progress) { //
+    #skyCelestialMovement(progress = 0.5) { //
         if (!this.arc || !this.sun) return this._queue.push(() => this.skyCelestialMovement(progress));
         this.#centerAnchor(this.sun);
         this.#centerAnchor(this.moon);

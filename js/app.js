@@ -306,7 +306,7 @@ const onInput = waiter(async (event) => {
         renderListBox(items, query);
     }
     catch (e) {
-        if (err.name !== 'AbortError') {
+        if (e.name !== 'AbortError') {
             console.error(e);
             renderOptions([], query);
         }
