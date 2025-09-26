@@ -18,12 +18,33 @@ export class WeatherBackground extends HTMLElement {
             z-index: 0;
             display: block;
             pointer-events: none;
+
+            --sat:1;
+            --bright:1;
+            --contrast:1;
+            --hue: 0deg;
+            --blur: 0px;
+            
         }
         #box-scene, svg{
+                
                 width: 100% ;
                 height: 100%;
                 display: block;
         }
+        #box-scene{ 
+            transition:filter .2s ease;
+            filter: 
+            saturate(var(--sat))
+            brightness(var(--bright))
+            contrast(var(--contrast))
+            hue-rotate(var(--hue))
+            blur(var(--blur))
+            ;
+
+        }
+
+
         </style>
         <div id="box-scene"></div>`;
         this._resolveReade = null;
@@ -58,12 +79,8 @@ export class WeatherBackground extends HTMLElement {
 
         //Choosing elements from svg scene
         this.arc = box.querySelector('#curve path');
-
         this.sun = box.querySelector('#sun');
         this.moon = box.querySelector('#moon');
-
-
-
         this.clouds = box.querySelectorAll('.cloud');
         this.rain = box.querySelectorAll('.rain');
         this.snow = box.querySelectorAll('.snow');
@@ -79,7 +96,7 @@ export class WeatherBackground extends HTMLElement {
         if (!data) return;
 
         if (!this.arc || !this.sun) return this._queue.push(() => this.sceneApplyWeather(data));
-
+        
         const setTimeToDate = (baseDate, hhmm) => {
             const d = new Date(baseDate);
             const [hh, mm] = hhmm.split(':').map(Number);
@@ -94,6 +111,8 @@ export class WeatherBackground extends HTMLElement {
             return idx === -1 ? null : { sunsetISO: daily.sunset[idx], sunriseISO: daily.sunrise[idx] };
         }
 
+
+        //set sun position
         this.#timeNow = data?.current_weather?.time ? new Date(data.current_weather.time) : new Date();
 
         const sunPickedTime = pickSunTimeForDate(this.#timeNow, data.daily);
@@ -113,7 +132,10 @@ export class WeatherBackground extends HTMLElement {
             this.#timeNow = new Date(this.#timeNow.getTime() + this.#clockMs);
             this.#CelestialTick();
         }, this.#clockMs)
-
+        //
+    
+        //set Weather mood
+        this.#SetWeatherMood(data)
     }
 
     //utils
@@ -163,10 +185,49 @@ export class WeatherBackground extends HTMLElement {
         const { cx, cy } = node.__anchor;
 
         let translate = `translate(${Position.x - cx}, ${Position.y - cy})`;
-
+        arc.setAttribute('stroke', "red")
         node.setAttribute('transform', translate);
+    }
+
+    //change weather mood utils
+
+    #SetWeatherMood = (state) => {
+            const mood = {
+                    clear:   { saturate:1, brightness:1, contrast:1, hue:10 },
+                    cloudy:  { saturate:0.6,  brightness:0.98, contrast:0.95 },
+                    overcast:{ saturate:0.25, brightness:0.93, contrast:0.95 },
+                    rain:    { saturate:0.35, brightness:0.88, contrast:0.95, hue:0 },
+                    snow:    { saturate:0.0,  brightness:1.10, contrast:0.92, hue:230 },
+                    thunder: { saturate:0.25, brightness:0.82, contrast:1.08, hue:220 },
+                    fog:     { saturate:0.20, brightness:0.96, contrast:0.85, blur:'1px' },
+            }
+
+            const maker = ({saturate = 1, brightness = 1, contrast = 1, hue = 0, blur = '0px'} = {}) => {
+                const host = this;
+                host.style.setProperty('--sat', String(saturate));
+                host.style.setProperty('--bright', String(brightness));
+                host.style.setProperty('--contrast', String(contrast));
+                host.style.setProperty('--hue', hue + (typeof hue === 'number' ? 'deg' : ''));
+                host.style.setProperty('--blur', String(blur));
+            }
+
+            maker(mood.clear)
+           
+        }
+
+    #setWeatherState = (cloudcover, temp, precipitation, wind, humidity) => {
 
     }
+
+
+        
+
+
+        
+
+    
+
+    //
 }
 
 
