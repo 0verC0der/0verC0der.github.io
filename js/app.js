@@ -347,7 +347,7 @@ async function fetchAndRenderWeather(lat, lon, label) {
         announce(I18n[lang].loading);
         const data = await fetch(FORECAST(lat, lon)).then(r => r.json());
         renderWeather(data, label);
-        scene.sceneApplyWeather(data)
+        scene.updateScene(data)
         console.log(data);
         lastREQ = { lat, lon, data, label };
     }
@@ -402,6 +402,7 @@ function renderWeather(data, lable) {
     }
     announce('');
 };
+
 
 //Event Listeners
 searchForm.addEventListener('submit', async (e) => {
