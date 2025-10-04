@@ -4,8 +4,6 @@
     --border: #aec8e1;
 }
 
-
-
 body {
     
     font-family: Arial, sans-serif;
@@ -53,9 +51,13 @@ main {
     max-width: 400px;
 }
 
+.weatherMain img {
+    width: 256px;
+    height: 256px;
+}
+
 .forecastContainer {
     display: flex;
-
     flex-direction: row;
     gap: 1rem;
 }

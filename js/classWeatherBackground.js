@@ -4,6 +4,7 @@ export class WeatherBackground extends HTMLElement {
 
     #clockMs = 1000; //set update time of sky celestial movement
     _timer = null;
+    #rafId = null;
 
 
     //global scene state
@@ -24,17 +25,18 @@ export class WeatherBackground extends HTMLElement {
             sunriseISO: '6:00',
             sunsetISO: '18:00'
         },
-        timeNow: new Date().now,
+        timeNow: new Date(),
+        isDay: true,
         daily:[],
         hourly:[],
     }
+
+    #sceneComponents // Components of svg scene obj.  forest, sun, moon etc.
 
     //controller objects
 
     #celestialController 
     #moodController  
-
-
 
     constructor() {
         super();
@@ -104,13 +106,15 @@ export class WeatherBackground extends HTMLElement {
         svg_scene.setAttribute('preserveAspectRatio', 'xMidYMid slice');
 
         //Choosing elements from svg scene
-        this.arc = box.querySelector('#curve path');
-        this.sun = box.querySelector('#sun');
-        this.moon = box.querySelector('#moon');
-        this.clouds = box.querySelectorAll('.cloud');
-        this.rain = box.querySelectorAll('.rain');
-        this.snow = box.querySelectorAll('.snow');
-        this.fog = box.querySelectorAll('.fog');
+        this.#sceneComponents = {
+            arc: box.querySelector('#curve path'),
+            sun: box.querySelector('#sun'),
+            moon: box.querySelector('#moon'),
+            clouds: box.querySelectorAll('.cloud'),
+            rain:box.querySelectorAll('.rain'),
+            snow: box.querySelectorAll('.snow'),
+            fog: box.querySelectorAll('.fog'),
+        } 
 
         this._resolveReady?.();
         const defFunc = this._queue.splice(0);
@@ -120,9 +124,10 @@ export class WeatherBackground extends HTMLElement {
     updateScene(data = null) {
         if (!data) return;
 
-        if (!this.arc || !this.sun) return this._queue.push(() => this.updateScene(data));
+        if (!this.#sceneComponents.arc || !this.#sceneComponents.sun) return this._queue.push(() => this.updateScene(data));
         
         this.#sceneState = normalizeDataToState(data, this.#sceneState)
+        console.log("Scene State: ", this.#sceneState)
 
         //set sun position
        //this.#sceneState.timeNow = data?.current_weather?.time ? new Date(data.current_weather.time) : new Date();
@@ -130,20 +135,53 @@ export class WeatherBackground extends HTMLElement {
         //const sunrise = new Date(sunPickedTime.sunriseISO);
         //const sunset = new Date(sunPickedTime.sunsetISO);
         //this.#sceneState.sunTime = { sunrise: sunrise, sunset: sunset }
-        
-        this.#celestialController.apply(this.#sceneState, {sun: this.sun, moon: this.moon, arc: this.arc})
+        this.#celestialController.apply(this.#sceneState, this.#sceneComponents)
         this.#moodController.apply(this.#sceneState)
 
-        if (this._timer) clearInterval(this._timer); //check if timer exist: true - reset. false - skip
-
-        this._timer = setInterval(() => {
-            this.#sceneState.timeNow = new Date(this.#sceneState.timeNow.getTime() + this.#clockMs);
+        //if (this._timer) clearInterval(this._timer); //check if timer exist: true - reset. false - skip
+        
+        // this._timer = setInterval(() => {
+        //     this.#sceneState.timeNow = new Date(this.#sceneState.timeNow.getTime() + this.#clockMs);
+        //     this.#celestialController.apply(this.#sceneState, this.#sceneComponents)
             
-            this.#celestialController.apply(this.#sceneState, {sun: this.sun, moon: this.moon, arc: this.arc})
-        }, this.#clockMs)
+        // }, this.#clockMs)
+
+        this.#startClock()
         //
     }
 
+    #startClock(){
+        if (this.#rafId) return;
+
+        var start;
+    
+        const loop = (timestamp) => {
+            if(!start) start = timestamp;
+
+            const dt = timestamp - start;
+            start = timestamp
+
+            //console.log("Time: ", this.#sceneState.timeNow)
+
+            this.#sceneState.timeNow = new Date(this.#sceneState.timeNow.getTime() + dt);
+            this.#celestialController.apply(this.#sceneState, this.#sceneComponents)
+            
+
+            this.#rafId = requestAnimationFrame(loop)
+        }
+
+        this.#rafId = requestAnimationFrame(loop)
+    }
+
+}
+
+//funcs 
+function isDayLight(now, sunriseISO, sunsetISO){
+    if (!now || !sunriseISO || !sunsetISO) return;
+    const sunrise = new Date(sunriseISO);
+    const sunset = new Date(sunsetISO);
+    if (sunset <= sunrise) sunset = new Date(sunset.getTime() + 24 * 3600 * 1000)
+    return (now >= sunrise) && (now <= sunset)
 }
 
 //func normalizeDataToState
@@ -153,6 +191,8 @@ function normalizeDataToState(data, prev={}){
     const daily = data?.daily ?? {};
     const hourly = data?.hourly ?? {};
     const timezone = data?.timezone || 'UTC';
+    const current_time = data.current_timezone_time;
+
 
     let sunriseISO = null, sunsetISO = null;
     if (Array.isArray(daily.time) && daily.time.length){
@@ -171,7 +211,7 @@ function normalizeDataToState(data, prev={}){
     else if (code === 3) density = 0.85;
     else if ([61, 63, 65, 80, 81, 82, 66, 67, 95, 96, 99].includes(code)) density = 0.9;
     else if ([45, 48].includes(code)) density = 0.7;
-
+    console.log()
     return {
         ...prev,
         code,
@@ -181,12 +221,11 @@ function normalizeDataToState(data, prev={}){
             sunriseISO,
             sunsetISO
         },
-        timeNow: new Date(current_weather.time) ?? new Date().toISOString(),
+        timeNow: new Date(current_time),
         density,
-
         daily: daily,
         hourly: hourly,
-        timezone: timezone
+        timezone: timezone,
     }
 }
 
@@ -213,6 +252,7 @@ class skyCelestialController{
         const now = state.timeNow
         const { sunriseISO, sunsetISO } = state.sunTimeISO;
         const progress = this.#checkDayProgress(now, sunriseISO, sunsetISO)
+        state.skyCelestial.progress = progress
         
         this.#moveOnArc(this.refs.arc, this.refs.sun, progress)
     }
@@ -239,12 +279,12 @@ class skyCelestialController{
 
 class MoodController {
   constructor(host){ this.host = host; }
-  apply(state){
+  apply(state, refs){
     const code = state.code ?? 0;
     const mood = {
       clear:   { saturate:1.0,  brightness:1.00, contrast:1.00, hue:10 },
       cloudy:  { saturate:0.75, brightness:0.98, contrast:0.96, hue:0 },
-      overcast:{ saturate:0.45, brightness:0.92, contrast:0.95, hue:0 },
+      overcast:{ saturate:0.45, brightness:0.82, contrast:0.95, hue:10 },
       rain:    { saturate:0.50, brightness:0.90, contrast:0.96, hue:0 },
       snow:    { saturate:0.10, brightness:1.08, contrast:0.93, hue:230 },
       thunder: { saturate:0.35, brightness:0.85, contrast:1.06, hue:220 },
@@ -273,12 +313,17 @@ class MoodController {
   }
 }
 
-class cloudController{
-    constructor(host){
-        this.host = host;
-    }
+class skyColorController{
+    constructor(host){this.host = host}
 
-    
+    apply(state){
+        if (state.isDay){
+            
+        }
+        else{
+
+        }
+    }
 }
 
 const cutter = (x) => Math.max(0, Math.min(1, x));

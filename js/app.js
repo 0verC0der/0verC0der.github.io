@@ -148,6 +148,8 @@ const FORECAST = (lat, lon) => `https://api.open-meteo.com/v1/forecast?latitude=
 &windspeed_unit=ms
 &forecast_days=5&timezone=auto`;
 const GEO_REV = (lat, lon, lang) => `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&language=${lang}&format=json`;
+const TIME_BY_TIMEZONE = (timezone) => `https://worldtimeapi.org/api/timezone/${timezone}`
+
 //
 
 
@@ -346,6 +348,8 @@ async function fetchAndRenderWeather(lat, lon, label) {
     try {
         announce(I18n[lang].loading);
         const data = await fetch(FORECAST(lat, lon)).then(r => r.json());
+        const time = await fetch(TIME_BY_TIMEZONE(data?.timezone)).then(r => r.json());
+        data.current_timezone_time = new Date(time.datetime).toISOString()
         renderWeather(data, label);
         scene.updateScene(data)
         console.log(data);
@@ -383,8 +387,6 @@ function renderWeather(data, lable) {
     weatherIcon.alt = weatherText(code, lang);
 
     const daily = data.daily;
-
-
     if (daily) {
         forecastContainer.innerHTML = ``;
         for (let i = 0; i < daily.time.length; i++) {
