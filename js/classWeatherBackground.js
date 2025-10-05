@@ -154,18 +154,18 @@ export class WeatherBackground extends HTMLElement {
         if (this.#rafId) return;
 
         var start;
-    
+        
         const loop = (timestamp) => {
             if(!start) start = timestamp;
-
+            
             const dt = timestamp - start;
             start = timestamp
 
+            const {sunriseISO, sunsetISO} = this.#sceneState.sunTimeISO
             //console.log("Time: ", this.#sceneState.timeNow)
-
             this.#sceneState.timeNow = new Date(this.#sceneState.timeNow.getTime() + dt);
             this.#celestialController.apply(this.#sceneState, this.#sceneComponents)
-            
+            this.#sceneState.isDay = isDayLight(this.#sceneState.timeNow, sunriseISO, sunsetISO)
 
             this.#rafId = requestAnimationFrame(loop)
         }
@@ -191,7 +191,9 @@ function normalizeDataToState(data, prev={}){
     const daily = data?.daily ?? {};
     const hourly = data?.hourly ?? {};
     const timezone = data?.timezone || 'UTC';
-    const current_time = data.current_timezone_time;
+    const current_time = data?.current_timezone_time;
+
+    console.log("CURRENT TIME IN SCENE STATE", current_time)
 
 
     let sunriseISO = null, sunsetISO = null;
@@ -211,7 +213,6 @@ function normalizeDataToState(data, prev={}){
     else if (code === 3) density = 0.85;
     else if ([61, 63, 65, 80, 81, 82, 66, 67, 95, 96, 99].includes(code)) density = 0.9;
     else if ([45, 48].includes(code)) density = 0.7;
-    console.log()
     return {
         ...prev,
         code,

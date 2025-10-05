@@ -343,16 +343,19 @@ function selectIndex(idx) {
 }
 //
 
+
 // Weather render func API
 async function fetchAndRenderWeather(lat, lon, label) {
     try {
         announce(I18n[lang].loading);
         const data = await fetch(FORECAST(lat, lon)).then(r => r.json());
-        const time = await fetch(TIME_BY_TIMEZONE(data?.timezone)).then(r => r.json());
-        data.current_timezone_time = new Date(time.datetime).toISOString()
+        const time = await fetch(TIME_BY_TIMEZONE(data.timezone)).then(r => r.json());
+        data.current_timezone_time = time.datetime.replace(/\.\d+(?=([+-]\d{2}:?\d{2}|Z)?$)/, '').replace(/([+-]\d{2}:?\d{2}|Z)$/, '')
+        console.log("data", data)
+        
         renderWeather(data, label);
         scene.updateScene(data)
-        console.log(data);
+        
         lastREQ = { lat, lon, data, label };
     }
     catch (e) {
@@ -363,7 +366,6 @@ async function fetchAndRenderWeather(lat, lon, label) {
 //
 
 function renderWeather(data, lable) {
-    const CurrentLang = I18n[lang];
     cityName.textContent = lable;
     const cw = data.current_weather;
 
@@ -435,17 +437,12 @@ searchForm.addEventListener('submit', async (e) => {
     }
 });
 
-
-
 geoLocBtn.addEventListener('click', () => {
     getGeolocation();
 });
 
-
-
 input.addEventListener('input', onInput);
 
-//keydown listener
 input.addEventListener('keydown', (e) => {
     console.log(e.key);
     const open = !listbox.hidden; const k = e.key;
@@ -456,12 +453,10 @@ input.addEventListener('keydown', (e) => {
     else if (k === 'Enter') { if (open && activeIndex >= 0) { e.preventDefault(); selectIndex(activeIndex); } }
     else if (k === 'Escape') { if (open) { e.preventDefault(); closeListBox(); } }
 });
-//
+
 
 btnUk.addEventListener('click', () => { lang = 'uk'; onLangRefresh(lang); });
 btnEn.addEventListener('click', () => { lang = 'en'; onLangRefresh(lang); });
-
-
 
 window.addEventListener('DOMContentLoaded', () => {
     if ('permission' in navigator && navigator.permissions?.query) {
