@@ -129,53 +129,30 @@ export class WeatherBackground extends HTMLElement {
         this.#sceneState = normalizeDataToState(data, this.#sceneState)
         console.log("Scene State: ", this.#sceneState)
 
-        //set sun position
-       //this.#sceneState.timeNow = data?.current_weather?.time ? new Date(data.current_weather.time) : new Date();
-        //const sunPickedTime = pickSunTimeForDate(this.#sceneState.timeNow, data.daily);
-        //const sunrise = new Date(sunPickedTime.sunriseISO);
-        //const sunset = new Date(sunPickedTime.sunsetISO);
-        //this.#sceneState.sunTime = { sunrise: sunrise, sunset: sunset }
         this.#celestialController.apply(this.#sceneState, this.#sceneComponents)
         this.#moodController.apply(this.#sceneState)
 
-        //if (this._timer) clearInterval(this._timer); //check if timer exist: true - reset. false - skip
-        
-        // this._timer = setInterval(() => {
-        //     this.#sceneState.timeNow = new Date(this.#sceneState.timeNow.getTime() + this.#clockMs);
-        //     this.#celestialController.apply(this.#sceneState, this.#sceneComponents)
-            
-        // }, this.#clockMs)
-
         this.#startClock()
-        //
     }
 
     #startClock(){
         if (this.#rafId) return;
-
         var start;
-        
         const loop = (timestamp) => {
             if(!start) start = timestamp;
-            
             const dt = timestamp - start;
             start = timestamp
-
             const {sunriseISO, sunsetISO} = this.#sceneState.sunTimeISO
-            //console.log("Time: ", this.#sceneState.timeNow)
             this.#sceneState.timeNow = new Date(this.#sceneState.timeNow.getTime() + dt);
             this.#celestialController.apply(this.#sceneState, this.#sceneComponents)
             this.#sceneState.isDay = isDayLight(this.#sceneState.timeNow, sunriseISO, sunsetISO)
-
             this.#rafId = requestAnimationFrame(loop)
         }
-
         this.#rafId = requestAnimationFrame(loop)
     }
 
 }
 
-//funcs 
 function isDayLight(now, sunriseISO, sunsetISO){
     if (!now || !sunriseISO || !sunsetISO) return;
     const sunrise = new Date(sunriseISO);
@@ -184,7 +161,6 @@ function isDayLight(now, sunriseISO, sunsetISO){
     return (now >= sunrise) && (now <= sunset)
 }
 
-//func normalizeDataToState
 
 function normalizeDataToState(data, prev={}){
     const current_weather = data?.current_weather ?? {};

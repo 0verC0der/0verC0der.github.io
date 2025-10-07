@@ -1,5 +1,8 @@
-import { WeatherBackground } from './classWeatherBackground.js'
-
+import { WeatherBackground } from './components/classWeatherBackground.js'
+import {FORECAST} from './api/weatherApi.js'
+import {TIME_BY_TIMEZONE} from './api/timeApi.js';
+import { GEO_API_URL, GEO_REV} from './api/geocodeApi.js';
+import { I18n } from './i18n/index.js';
 
 const html = document.documentElement;
 const input = document.getElementById('cityInput');
@@ -26,7 +29,6 @@ const forecastContainer = document.getElementById('forecastContainer');
 const btnUk = document.getElementById('lang-uk-btn');
 const btnEn = document.getElementById('lang-en-btn');
 const searchBtn = document.getElementById('search-btn');
-
 const scene = document.getElementById('weather-scene');
 
 
@@ -101,57 +103,6 @@ const ICON_BY_WMO = {
 };
 
 const weatherText = (code, lang) => (WMO[code]?.[lang]) || String(code);
-
-// Internationalization (i18n) configuration
-const I18n = {
-    en: { // англійська
-        title: 'Weather App',
-        placeholder: "Enter city name",
-        search: "Search",
-        geoloc: "Geolocation",
-        temp: 'Temperature',
-        desc: 'Description',
-        humidity: "Humidity",
-        wind: "Wind Speed",
-        forecast: "5-Day Forecast",
-        comboHint: "Use arrow keys to navigate suggestions, Enter to choose, Escape to close",
-        loading: "Loading...",
-        none: "No results found",
-        results: (n) => `${n} results found`,
-        error: 'Something went wrong'
-    },
-    uk: { // українська
-        title: 'Погода',
-        placeholder: "Введіть ім'я міста ",
-        search: "Пошук",
-        geoloc: "Геолокація",
-        temp: 'Температура',
-        desc: 'Опис',
-        humidity: "Вологість",
-        wind: "Швидкість вітру",
-        forecast: "5-ти денний прогноз",
-        comboHint: "Використовуйте клавіші стрілок, щоб обрати результат пошуку. Клавіша Enter обрати, Esc - закрити",
-        loading: "Завантаження...",
-        none: "Не знайдено жодних результатів",
-        results: (n) => `${n} результатів знайдено`,
-        error: 'Щось пішло не так'
-    }
-};
-
-// API links
-const GEO_API_URL = (query, lang) => `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=${lang}&format=json`;
-const FORECAST = (lat, lon) => `https://api.open-meteo.com/v1/forecast?latitude=${lat}
-&longitude=${lon}
-&current_weather=true
-&hourly=cloudcover,relativehumidity_2m
-&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,sunrise,sunset
-&windspeed_unit=ms
-&forecast_days=5&timezone=auto`;
-const GEO_REV = (lat, lon, lang) => `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&language=${lang}&format=json`;
-const TIME_BY_TIMEZONE = (timezone) => `https://worldtimeapi.org/api/timezone/${timezone}`
-
-//
-
 
 const screen = (s) => s.replace(/[.*+?${}()|[\]\\]/g, '\\$&');
 
@@ -333,7 +284,6 @@ const onInput = waiter(async (event) => {
 
 //обрати індекс для списку елементів
 function selectIndex(idx) {
-
     const el = listbox.querySelector(`#option-${idx}`);
     console.log("(selectIndex) Listbox: ", el)
     if (!el || el.getAttribute('aria-disabled') === 'true') return;
@@ -350,9 +300,7 @@ async function fetchAndRenderWeather(lat, lon, label) {
         announce(I18n[lang].loading);
         const data = await fetch(FORECAST(lat, lon)).then(r => r.json());
         const time = await fetch(TIME_BY_TIMEZONE(data.timezone)).then(r => r.json());
-        data.current_timezone_time = time.datetime.replace(/\.\d+(?=([+-]\d{2}:?\d{2}|Z)?$)/, '').replace(/([+-]\d{2}:?\d{2}|Z)$/, '')
-        console.log("data", data)
-        
+        data.current_timezone_time = time.datetime.replace(/\.\d+(?=([+-]\d{2}:?\d{2}|Z)?$)/, '').replace(/([+-]\d{2}:?\d{2}|Z)$/, '')        
         renderWeather(data, label);
         scene.updateScene(data)
         
@@ -368,7 +316,6 @@ async function fetchAndRenderWeather(lat, lon, label) {
 function renderWeather(data, lable) {
     cityName.textContent = lable;
     const cw = data.current_weather;
-
     const code = cw.weathercode;
     WeatherCode = code;
     tempValue.textContent = `${Math.round(cw.temperature)}°C`;
@@ -446,8 +393,8 @@ input.addEventListener('input', onInput);
 input.addEventListener('keydown', (e) => {
     console.log(e.key);
     const open = !listbox.hidden; const k = e.key;
-    if (k === 'ArrowDown') { e.preventDefault(); if (!open) { openListbox(); setActive(0); } else setActive(activeIndex + 1); }
-    else if (k === 'ArrowUp') { e.preventDefault(); if (!open) { openListbox(); setActive(0); } else setActive(activeIndex - 1); }
+    if (k === 'ArrowDown') { e.preventDefault(); if (!open) { openListBox(); setActive(0); } else setActive(activeIndex + 1); }
+    else if (k === 'ArrowUp') { e.preventDefault(); if (!open) { openListBox(); setActive(0); } else setActive(activeIndex - 1); }
     else if (k === 'Home') { if (open) { e.preventDefault(); setActive(0); } }
     else if (k === 'End') { if (open) { e.preventDefault(); setActive(options.length - 1); } }
     else if (k === 'Enter') { if (open && activeIndex >= 0) { e.preventDefault(); selectIndex(activeIndex); } }
@@ -460,7 +407,7 @@ btnEn.addEventListener('click', () => { lang = 'en'; onLangRefresh(lang); });
 
 window.addEventListener('DOMContentLoaded', () => {
     if ('permission' in navigator && navigator.permissions?.query) {
-        navigator.permission.query({ name: 'geolocation' }).then(result => {
+        navigator.permissions.query({ name: 'geolocation' }).then(result => {
             if (result.state === 'granted' || result.state === 'prompt') {
                 getGeolocation();
             }
