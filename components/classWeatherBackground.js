@@ -1,11 +1,9 @@
 export class WeatherBackground extends HTMLElement {
 
     static get observedAttributes() { return ['src'] };
-
-    #clockMs = 1000; //set update time of sky celestial movement
+   
     _timer = null;
     #rafId = null;
-
 
     //global scene state
     #sceneState = {
@@ -32,9 +30,6 @@ export class WeatherBackground extends HTMLElement {
     }
 
     #sceneComponents // Components of svg scene obj.  forest, sun, moon etc.
-
-    //controller objects
-
     #celestialController 
     #moodController  
 
@@ -96,12 +91,12 @@ export class WeatherBackground extends HTMLElement {
         //Get svg text
         const svgText = await res.text();
         const box = this.shadowRoot.getElementById('box-scene');
-
+    
         box.innerHTML = svgText;
 
         const svg_scene = box.querySelector('svg');
+        console.log('Scene component', box)
         if (!svg_scene) return;
-
 
         svg_scene.setAttribute('preserveAspectRatio', 'xMidYMid slice');
 
@@ -115,7 +110,7 @@ export class WeatherBackground extends HTMLElement {
             snow: box.querySelectorAll('.snow'),
             fog: box.querySelectorAll('.fog'),
         } 
-
+        console.log('Scene components', this.#sceneComponents)
         this._resolveReady?.();
         const defFunc = this._queue.splice(0);
         defFunc.forEach(f => f());
@@ -136,21 +131,23 @@ export class WeatherBackground extends HTMLElement {
     }
 
     #startClock(){
-        if (this.#rafId) return;
-        var start;
-        const loop = (timestamp) => {
-            if(!start) start = timestamp;
-            const dt = timestamp - start;
-            start = timestamp
-            const {sunriseISO, sunsetISO} = this.#sceneState.sunTimeISO
-            this.#sceneState.timeNow = new Date(this.#sceneState.timeNow.getTime() + dt);
-            this.#celestialController.apply(this.#sceneState, this.#sceneComponents)
-            this.#sceneState.isDay = isDayLight(this.#sceneState.timeNow, sunriseISO, sunsetISO)
-            this.#rafId = requestAnimationFrame(loop)
-        }
+            if (this.#rafId) return;
+            var start;
+            const loop = (timestamp) => {
+                if(!start) start = timestamp;
+                const dt = timestamp - start;
+                start = timestamp
+                const {sunriseISO, sunsetISO} = this.#sceneState.sunTimeISO
+
+                this.#sceneState.isDay = isDayLight(this.#sceneState.timeNow, sunriseISO, sunsetISO)
+
+                this.#sceneState.timeNow = new Date(this.#sceneState.timeNow.getTime() + dt);
+                this.#celestialController.apply(this.#sceneState, this.#sceneComponents)
+
+                this.#rafId = requestAnimationFrame(loop)
+            }
         this.#rafId = requestAnimationFrame(loop)
     }
-
 }
 
 function isDayLight(now, sunriseISO, sunsetISO){
@@ -168,9 +165,6 @@ function normalizeDataToState(data, prev={}){
     const hourly = data?.hourly ?? {};
     const timezone = data?.timezone || 'UTC';
     const current_time = data?.current_timezone_time;
-
-    console.log("CURRENT TIME IN SCENE STATE", current_time)
-
 
     let sunriseISO = null, sunsetISO = null;
     if (Array.isArray(daily.time) && daily.time.length){
@@ -232,6 +226,7 @@ class skyCelestialController{
         state.skyCelestial.progress = progress
         
         this.#moveOnArc(this.refs.arc, this.refs.sun, progress)
+        //this.#updateVisibility()
     }
 
     #checkDayProgress = (now, sunriseISO, sunsetISO) => {
@@ -252,6 +247,27 @@ class skyCelestialController{
         let translate = `translate(${Position.x - cx}, ${Position.y - cy})`;
         node.setAttribute('transform', translate);
     }
+
+    #updateVisibility(state) {
+    if (!this.refs) return;
+    const sun = this.refs.sun;
+    const moon = this.refs.moon;
+    const isDay = Boolean(state.isDay);
+
+    if (sun) {
+        // Плавно показуємо/ховаємо сонце
+        sun.style.opacity = isDay ? '1' : '0';
+        sun.style.pointerEvents = isDay ? 'auto' : 'none';
+        sun.setAttribute('aria-hidden', isDay ? 'false' : 'true');
+    }
+    if (moon) {
+        // Місяць навпаки
+        moon.style.opacity = isDay ? '0' : '1';
+        moon.style.pointerEvents = isDay ? 'none' : 'auto';
+        moon.setAttribute('aria-hidden', isDay ? 'true' : 'false');
+    }
+}
+
 }
 
 class MoodController {

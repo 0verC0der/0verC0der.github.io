@@ -3,10 +3,12 @@ import {FORECAST} from './api/weatherApi.js'
 import {TIME_BY_TIMEZONE} from './api/timeApi.js';
 import { GEO_API_URL, GEO_REV} from './api/geocodeApi.js';
 import { I18n } from './i18n/index.js';
+import { WMO, ICON_BY_WMO, weatherText} from './utils/wmo.js';
+import Listbox from './components/listBox.js';
 
 const html = document.documentElement;
-const input = document.getElementById('cityInput');
-const listbox = document.getElementById('cityListbox');
+const inputEl = document.getElementById('cityInput');
+const listBoxEl = document.getElementById('cityListbox');
 const statusEl = document.getElementById('liveStatus');
 const geoLocBtn = document.getElementById('geoloc-btn');
 const titleEl = document.getElementById('appTitle');
@@ -39,79 +41,16 @@ let abortCtrl = null; // простий контроллер перериван�
 let lang = 'en';
 let WeatherCode = 0; // код погоди
 let lastREQ = { lat: null, lon: null, data: null, label: null };
-let options;
 
+const listboxObj = new Listbox({
+    listBoxEl,
+    inputEl: inputEl,
+    announcer: announce,
+    onSelect: ({label, lat, lon}) => fetchAndRenderWeather(lat, lon, label)
+})
 
-const WMO = {
-    0: { en: 'Clear sky', uk: 'Ясно' },
-    1: { en: 'Mainly clear', uk: 'Переважно ясно' },
-    2: { en: 'Partly cloudy', uk: 'Мінлива хмарність' },
-    3: { en: 'Overcast', uk: 'Похмуро' },
-    45: { en: 'Fog', uk: 'Туман' },
-    48: { en: 'Depositing rime fog', uk: 'Паморозь' },
-    51: { en: 'Light drizzle', uk: 'Легкий мряка' },
-    53: { en: 'Moderate drizzle', uk: 'Мряка' },
-    55: { en: 'Dense drizzle', uk: 'Сильна мряка' },
-    56: { en: 'Light freezing drizzle', uk: 'Легкий паморозний дощ' },
-    57: { en: 'Dense freezing drizzle', uk: 'Сильний паморозний дощ' },
-    61: { en: 'Slight rain', uk: 'Невеликий дощ' },
-    63: { en: 'Moderate rain', uk: 'Дощ' },
-    65: { en: 'Heavy rain', uk: 'Сильний дощ' },
-    66: { en: 'Light freezing rain', uk: 'Невеликий крижаних дощ' },
-    67: { en: 'Heavy freezing rain', uk: 'Сильний крижаних дощ' },
-    71: { en: 'Slight snow fall', uk: 'Невеликий сніг' },
-    73: { en: 'Moderate snow fall', uk: 'Сніг' },
-    75: { en: 'Heavy snow fall', uk: 'Сильний сніг' },
-    77: { en: 'Snow grains', uk: 'Сніжна крупа' },
-    80: { en: 'Rain showers: slight', uk: 'Короткочасні дощі: слабкі' },
-    81: { en: 'Rain showers: moderate', uk: 'Короткочасні дощі: помірні' },
-    82: { en: 'Rain showers: violent', uk: 'Зливи: сильні' },
-    85: { en: 'Snow showers: slight', uk: 'Снігопад: слабкий' },
-    86: { en: 'Snow showers: heavy', uk: 'Снігопад: сильний' },
-    95: { en: 'Thunderstorm', uk: 'Гроза' },
-    96: { en: 'Thunderstorm with slight hail', uk: 'Гроза з невеликим градом' },
-    99: { en: 'Thunderstorm with heavy hail', uk: 'Гроза з сильним градом' },
-};
+function announce(msg){ statusEl.textContent = msg; }
 
-const ICON_BY_WMO = {
-    0: 'sunny-day-16458.svg',
-    1: 'sun-and-blue-cloud-16460.svg',
-    2: 'blue-clouds-and-sun-16461.svg',
-    3: 'cloudy-weather-16459.svg',
-    45: 'fog-svgrepo-com',
-    51: 'rainy-day-16464.svg',
-    55: 'rainy-day-16464.svg',
-    56: 'rainy-day-16464.svg',
-    57: 'downpour-rain-and-blue-cloud-16463.svg',
-    61: 'rainy-day-16464.svg',
-    63: 'rainy-day-and-blue-cloud-16462.svg',
-    65: 'downpour-rain-and-blue-cloud-16463.svg',
-    66: 'hail-and-winter-cloud-16490.svg',
-    67: 'hail-and-blue-cloud-16491.svg',
-    71: 'winter-snowfall-16473.svg',
-    73: 'winter-snowfall-16473.svg',
-    75: 'snowy-weather-16472.svg',
-    77: 'winter-snowfall-16473.svg',
-    80: 'rainy-day-16464.svg',
-    81: 'rainy-day-16464.svg',
-    82: 'downpour-rain-and-blue-cloud-16463.svg',
-    85: 'winter-snowfall-16473.svg',
-    86: 'snowy-weather-16472.svg',
-    95: 'thunder.svg',
-    96: 'lightning-and-rainy-weather-16465.svg',
-    99: 'lightning-and-rainy-weather-16465.svg',
-};
-
-const weatherText = (code, lang) => (WMO[code]?.[lang]) || String(code);
-
-const screen = (s) => s.replace(/[.*+?${}()|[\]\\]/g, '\\$&');
-
-// listbox render functions
-function openListBox() { if (listbox.hidden) { listbox.hidden = false; input.setAttribute('aria-expanded', 'true'); } }
-function closeListBox() { if (!listbox.hidden) { listbox.hidden = true; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); activeIndex = -1; } }
-//
-
-function announce(msg) { statusEl.textContent = msg; }
 const setPressed = (btn, state) => { btn.setAttribute('aria-pressed', state ? 'true' : 'false'); }
 
 function ftmDate(iso, lang, timezone) {
@@ -129,8 +68,7 @@ const waiter = (fn, ms) => {
     };
 }
 
-function onLangRefresh(newLang) {
-    return async () => {
+async function onLangRefresh(newLang) {
         lang = newLang;
         setPressed(btnUk, lang === 'uk');
         setPressed(btnEn, lang === 'en');
@@ -139,7 +77,6 @@ function onLangRefresh(newLang) {
         if (lastREQ.data) {
             try {
                 const rev = await fetch(GEO_REV(lastREQ.lat, lastREQ.lon, lang)).then(r => r.json());
-                console.log(rev);
                 lastREQ.label = rev ? [rev.locality, rev.countryName].filter(Boolean).join(', ') : lastREQ.label;
             }
             catch (e) {
@@ -148,15 +85,14 @@ function onLangRefresh(newLang) {
             }
             renderWeather(lastREQ.data, lastREQ.label);
         }
-        input.dispatchEvent(new Event('input'));
-    }
+        inputEl.dispatchEvent(new Event('input'));
 }
 
-function applyI18n() {
+function applyI18n() {  
     const currentLang = I18n[lang];
     html.lang = lang;
     titleEl.textContent = currentLang.title;
-    input.placeholder = currentLang.placeholder;
+    inputEl.placeholder = currentLang.placeholder;
     searchBtn.textContent = currentLang.search;
     geoLocBtn.textContent = currentLang.geoloc;
     forecastTitle.textContent = currentLang.forecast;
@@ -196,66 +132,19 @@ function getGeolocation() {
 }
 
 
-function renderListBox(items, query) {
-    listbox.innerHTML = '';
-    options = items;
-    const CurrentLang = I18n[lang];
-    if (!items.length) {
-        const li = document.createElement('li');
-        li.role = 'option';
-        li.className = 'option';
-        li.setAttribute('aria-disabled', 'true');
-        li.textContent = CurrentLang.none;
-        listbox.appendChild(li);
-        openListBox();
-        announce(CurrentLang.none);
-        return;
-    }
-    const regex = new RegExp(screen(query), 'i');
-    items.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.role = 'option';
-        li.id = `option-${index}`;
-        li.className = 'option';
-        li.dataset.label = item.label;
-        li.dataset.lat = item.lat;
-        li.dataset.lon = item.lon;
-        li.innerHTML = item.label.replace(regex, match => '<mark>' + match + '</mark>');
-        listbox.appendChild(li);
-    })
-    announce(CurrentLang.results(items.length));
-    openListBox();
-    setActive(0);
-}
-
-function setActive(idx) { // function active element setup
-    const nodeList = listbox ? listbox.querySelectorAll('.option[role="option"]') : null;
-    const opts = Array.from(nodeList || []);
-    if (!opts.length) return;
-    idx = Math.max(0, Math.min(idx, opts.length - 1));
-    if (activeIndex >= 0 && opts[activeIndex]) opts[activeIndex].dataset.active = 'false';
-    activeIndex = idx;
-    const el = opts[activeIndex];
-    el.dataset.active = 'true';
-    input.setAttribute('aria-activedescendant', el.id);
-    el.scrollIntoView({ block: 'nearest' });
-}
-//
-
 //onInput event
 const onInput = waiter(async (event) => {
     const query = event.target.value.trim();
-    if (query.length < 2) { closeListBox(); return; }
+    if (query.length < 2) { listboxObj.closeListBox(); return; }
     const cacheKey = `${query.toLowerCase()}| ${lang} `;
-    if (cache.has(cacheKey)) { renderListBox(cache.get(cacheKey), query); return; }
+    if (cache.has(cacheKey)) { listboxObj.render(cache.get(cacheKey), query, I18n[lang]); return; }
     abortCtrl?.abort();
     abortCtrl = new AbortController();
-    input.setAttribute('aria-busy', 'true');
+    inputEl.setAttribute('aria-busy', 'true');
     announce(I18n[lang].loading);
 
     try {
         const response = await fetch(GEO_API_URL(query, lang), { signal: abortCtrl.signal })
-
         if (!response.ok) throw new Error('HTTP error' + response.status);
         announce('');
         const data = await response.json();
@@ -267,7 +156,7 @@ const onInput = waiter(async (event) => {
             return { key, label, lat: r.latitude, lon: r.longitude };
         }).filter(it => { if (seen.has(it.key)) return false; seen.add(it.key); return true; });
         cache.set(cacheKey, items);
-        renderListBox(items, query);
+        listboxObj.render(items, query, I18n[lang]);
     }
     catch (e) {
         if (e.name !== 'AbortError') {
@@ -276,23 +165,11 @@ const onInput = waiter(async (event) => {
         }
     }
     finally {
-        input.removeAttribute('aria-busy');
+        inputEl.removeAttribute('aria-busy');
     }
 
 }, 200);
 //
-
-//обрати індекс для списку елементів
-function selectIndex(idx) {
-    const el = listbox.querySelector(`#option-${idx}`);
-    console.log("(selectIndex) Listbox: ", el)
-    if (!el || el.getAttribute('aria-disabled') === 'true') return;
-
-    const label = el.dataset.label; const lat = Number(el.dataset.lat); const lon = Number(el.dataset.lon);
-    input.value = label; closeListBox(); fetchAndRenderWeather(lat, lon, label);
-}
-//
-
 
 // Weather render func API
 async function fetchAndRenderWeather(lat, lon, label) {
@@ -300,10 +177,9 @@ async function fetchAndRenderWeather(lat, lon, label) {
         announce(I18n[lang].loading);
         const data = await fetch(FORECAST(lat, lon)).then(r => r.json());
         const time = await fetch(TIME_BY_TIMEZONE(data.timezone)).then(r => r.json());
-        data.current_timezone_time = time.datetime.replace(/\.\d+(?=([+-]\d{2}:?\d{2}|Z)?$)/, '').replace(/([+-]\d{2}:?\d{2}|Z)$/, '')        
+        data.current_timezone_time = time.datetime.replace(/\.\d+(?=([+-]\d{2}:?\d{2}|Z)?$)/, '').replace(/([+-]\d{2}:?\d{2}|Z)$/, '');       
         renderWeather(data, label);
         scene.updateScene(data)
-        
         lastREQ = { lat, lon, data, label };
     }
     catch (e) {
@@ -317,11 +193,11 @@ function renderWeather(data, lable) {
     cityName.textContent = lable;
     const cw = data.current_weather;
     const code = cw.weathercode;
+    let hum = null;
     WeatherCode = code;
     tempValue.textContent = `${Math.round(cw.temperature)}°C`;
     descriptionValue.textContent = `${weatherText(code, lang)} `;
     windSpeedValue.textContent = `${Math.round(cw.windspeed)} m / s`;
-    let hum = null;
     const times = data.hourly?.time || [];
     const humidities = data.hourly?.relativehumidity_2m || [];
     if (times.length && humidities.length) {
@@ -359,7 +235,7 @@ function renderWeather(data, lable) {
 searchForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const query = input.value.trim();
+    const query = inputEl.value.trim();
     if (!query) return;
 
     if (!listbox.hidden && activeIndex >= 0) {
@@ -388,21 +264,10 @@ geoLocBtn.addEventListener('click', () => {
     getGeolocation();
 });
 
-input.addEventListener('input', onInput);
+inputEl.addEventListener('input', onInput);
+inputEl.addEventListener('keydown', (e) => listboxObj.handleKey(e));
 
-input.addEventListener('keydown', (e) => {
-    console.log(e.key);
-    const open = !listbox.hidden; const k = e.key;
-    if (k === 'ArrowDown') { e.preventDefault(); if (!open) { openListBox(); setActive(0); } else setActive(activeIndex + 1); }
-    else if (k === 'ArrowUp') { e.preventDefault(); if (!open) { openListBox(); setActive(0); } else setActive(activeIndex - 1); }
-    else if (k === 'Home') { if (open) { e.preventDefault(); setActive(0); } }
-    else if (k === 'End') { if (open) { e.preventDefault(); setActive(options.length - 1); } }
-    else if (k === 'Enter') { if (open && activeIndex >= 0) { e.preventDefault(); selectIndex(activeIndex); } }
-    else if (k === 'Escape') { if (open) { e.preventDefault(); closeListBox(); } }
-});
-
-
-btnUk.addEventListener('click', () => { lang = 'uk'; onLangRefresh(lang); });
+btnUk.addEventListener('click', () => { lang = 'uk'; onLangRefresh(lang);});
 btnEn.addEventListener('click', () => { lang = 'en'; onLangRefresh(lang); });
 
 window.addEventListener('DOMContentLoaded', () => {
