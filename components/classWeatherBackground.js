@@ -1,3 +1,5 @@
+import { TimeCounter } from "./timeComponent.js";
+
 export class WeatherBackground extends HTMLElement {
 
     static get observedAttributes() { return ['src'] };
@@ -31,7 +33,8 @@ export class WeatherBackground extends HTMLElement {
 
     #sceneComponents // Components of svg scene obj.  forest, sun, moon etc.
     #celestialController 
-    #moodController  
+    #moodController
+    #actualTime
 
     constructor() {
         super();
@@ -49,8 +52,7 @@ export class WeatherBackground extends HTMLElement {
             --bright:1;
             --contrast:1;
             --hue: 0deg;
-            --blur: 0px;
-            
+            --blur: 0px;      
         }
         #box-scene, svg{
                 width: 100% ;
@@ -72,6 +74,7 @@ export class WeatherBackground extends HTMLElement {
 
         this.#celestialController = new skyCelestialController(this)
         this.#moodController = new MoodController(this)
+         this.#actualTime = new TimeCounter()
 
         this._resolveReady = null;
         this.ready = new Promise(res => (this._resolveReady = res));
@@ -82,8 +85,6 @@ export class WeatherBackground extends HTMLElement {
     }
     //on attribute change
     attributeChangedCallback(n) { if (n === 'src') this.#load(); }
-
-    
 
     async #load() {
         const res = await fetch(this.getAttribute('src'));
@@ -122,7 +123,9 @@ export class WeatherBackground extends HTMLElement {
         if (!this.#sceneComponents.arc || !this.#sceneComponents.sun) return this._queue.push(() => this.updateScene(data));
         
         this.#sceneState = normalizeDataToState(data, this.#sceneState)
+
         console.log("Scene State: ", this.#sceneState)
+        this.#actualTime.updateTime(data?.current_timezone_time)
 
         this.#celestialController.apply(this.#sceneState, this.#sceneComponents)
         this.#moodController.apply(this.#sceneState)
@@ -141,7 +144,7 @@ export class WeatherBackground extends HTMLElement {
 
                 this.#sceneState.isDay = isDayLight(this.#sceneState.timeNow, sunriseISO, sunsetISO)
 
-                this.#sceneState.timeNow = new Date(this.#sceneState.timeNow.getTime() + dt);
+                this.#sceneState.timeNow = this.#actualTime.getCurrentTimeCounter();
                 this.#celestialController.apply(this.#sceneState, this.#sceneComponents)
 
                 this.#rafId = requestAnimationFrame(loop)
@@ -248,31 +251,31 @@ class skyCelestialController{
         node.setAttribute('transform', translate);
     }
 
-    #updateVisibility(state) {
-    if (!this.refs) return;
-    const sun = this.refs.sun;
-    const moon = this.refs.moon;
-    const isDay = Boolean(state.isDay);
+        #updateVisibility(state) {
+        if (!this.refs) return;
+        const sun = this.refs.sun;
+        const moon = this.refs.moon;
+        const isDay = Boolean(state.isDay);
 
-    if (sun) {
-        // Плавно показуємо/ховаємо сонце
-        sun.style.opacity = isDay ? '1' : '0';
-        sun.style.pointerEvents = isDay ? 'auto' : 'none';
-        sun.setAttribute('aria-hidden', isDay ? 'false' : 'true');
+        if (sun) {
+            // Плавно показуємо/ховаємо сонце
+            sun.style.opacity = isDay ? '1' : '0';
+            sun.style.pointerEvents = isDay ? 'auto' : 'none';
+            sun.setAttribute('aria-hidden', isDay ? 'false' : 'true');
+        }
+        if (moon) {
+            // Місяць навпаки
+            moon.style.opacity = isDay ? '0' : '1';
+            moon.style.pointerEvents = isDay ? 'none' : 'auto';
+            moon.setAttribute('aria-hidden', isDay ? 'true' : 'false');
+        }
     }
-    if (moon) {
-        // Місяць навпаки
-        moon.style.opacity = isDay ? '0' : '1';
-        moon.style.pointerEvents = isDay ? 'none' : 'auto';
-        moon.setAttribute('aria-hidden', isDay ? 'true' : 'false');
-    }
-}
 
 }
 
 class MoodController {
   constructor(host){ this.host = host; }
-  apply(state, refs){
+  apply(state){
     const code = state.code ?? 0;
     const mood = {
       clear:   { saturate:1.0,  brightness:1.00, contrast:1.00, hue:10 },
