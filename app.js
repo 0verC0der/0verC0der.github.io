@@ -5,6 +5,7 @@ import { GEO_API_URL, GEO_REV} from './api/geocodeApi.js';
 import { I18n } from './i18n/index.js';
 import { WMO, ICON_BY_WMO, weatherText} from './utils/wmo.js';
 import Listbox from './components/listBox.js';
+import { TimeCounter } from './components/timeComponent.js';
 
 const html = document.documentElement;
 const inputEl = document.getElementById('cityInput');
@@ -12,7 +13,7 @@ const listBoxEl = document.getElementById('cityListbox');
 const statusEl = document.getElementById('liveStatus');
 const geoLocBtn = document.getElementById('geoloc-btn');
 const titleEl = document.getElementById('appTitle');
-
+const clock = document.getElementById('currentTime')
 const searchForm = document.getElementById('searchForm');
 const cityName = document.getElementById('cityName');
 const temperature = document.getElementById('temperature');
@@ -48,6 +49,9 @@ const listboxObj = new Listbox({
     announcer: announce,
     onSelect: ({label, lat, lon}) => fetchAndRenderWeather(lat, lon, label)
 })
+
+const actualTime = new TimeCounter()
+actualTime.updateTime();
 
 function announce(msg){ statusEl.textContent = msg; }
 
@@ -131,7 +135,6 @@ function getGeolocation() {
     });
 }
 
-
 //onInput event
 const onInput = waiter(async (event) => {
     const query = event.target.value.trim();
@@ -178,6 +181,7 @@ async function fetchAndRenderWeather(lat, lon, label) {
         const data = await fetch(FORECAST(lat, lon)).then(r => r.json());
         const time = await fetch(TIME_BY_TIMEZONE(data.timezone)).then(r => r.json());
         data.current_timezone_time = time.datetime.replace(/\.\d+(?=([+-]\d{2}:?\d{2}|Z)?$)/, '').replace(/([+-]\d{2}:?\d{2}|Z)$/, '');       
+        actualTime.setTimeCounter(data.current_timezone_time)
         renderWeather(data, label);
         scene.updateScene(data)
         lastREQ = { lat, lon, data, label };
@@ -230,6 +234,24 @@ function renderWeather(data, lable) {
     announce('');
 };
 
+var _clockInterval = null;
+
+function setClockTextContent(){
+    if (!clock) return;
+    const dt = actualTime.getCurrentTimeCounter();
+    const timeSTR = new Intl.DateTimeFormat(lang || 'en', {hour : '2-digit', minute: '2-digit', second: '2-digit'}).format(dt)
+
+    clock.textContent = timeSTR;
+}
+
+function updateClockTextContent() {
+    setClockTextContent();
+    if(_clockInterval) return;
+
+    _clockInterval = setInterval(setClockTextContent, 1000);
+}
+
+updateClockTextContent();
 
 //Event Listeners
 searchForm.addEventListener('submit', async (e) => {

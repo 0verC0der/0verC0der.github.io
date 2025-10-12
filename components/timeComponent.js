@@ -1,32 +1,39 @@
+const _shared = {
+    timeNow: new Date(),
+    rafID: null
+}
+
 export class TimeCounter {
-    constructor(){
-    
-    }
-    #rafID = null
-
-    #timeState = {
-        timeNow: new Date()
+    constructor(timeNow){
+        _shared.timeNow = timeNow ? new Date(timeNow) : new Date()
     }
 
-    
-
-    updateTime(timeNow){
-        if (this.#rafID) return;
+    updateTime(){
+        if (_shared.rafID) return;
         var start;
-
+        console.log("Time: ", _shared.timeNow);
         const loop = (timestamp) => {
-            if(!start) start = timestamp
-
+            if(!start) start = timestamp 
             const dt = timestamp - start
             start = timestamp
-            this.#timeState.timeNow = new Date(this.#timeState.timeNow.getTime() + dt);
-            this.#rafID = requestAnimationFrame(loop)
+            _shared.timeNow = new Date(_shared.timeNow.getTime() + dt);
+            _shared.rafID = requestAnimationFrame(loop)
         }
-        this.#rafID = requestAnimationFrame(loop)
+        _shared.rafID = requestAnimationFrame(loop)
+    }
+
+    stopTime(){
+        if(!_shared.rafID) return;
+        cancelAnimationFrame(_shared.rafID)
+        _shared.rafID = null
+    }
+
+    setTimeCounter(newTime){
+        _shared.timeNow = new Date(newTime)
     }
 
     getCurrentTimeCounter(){
-        return this.#timeState.timeNow
+        return _shared.timeNow
     }
 
 }
