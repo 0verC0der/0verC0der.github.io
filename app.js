@@ -180,6 +180,8 @@ async function fetchAndRenderWeather(lat, lon, label) {
         announce(I18n[lang].loading);
         const data = await fetch(FORECAST(lat, lon)).then(r => r.json());
         const time = await fetch(TIME_BY_TIMEZONE(data.timezone)).then(r => r.json());
+
+        console.log('Weather data:', data);
         data.current_timezone_time = time.datetime.replace(/\.\d+(?=([+-]\d{2}:?\d{2}|Z)?$)/, '').replace(/([+-]\d{2}:?\d{2}|Z)$/, '');       
         actualTime.setTimeCounter(data.current_timezone_time)
         renderWeather(data, label);

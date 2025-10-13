@@ -1,6 +1,7 @@
 import { TimeCounter } from "./timeComponent.js";
 import { skyCelestialController } from "../controllers/skyCelestialController.js";
 import { moodController } from "../controllers/moodController.js"
+import { cloudController } from "../controllers/cloudController.js";
 
 export class weatherBackground extends HTMLElement {
 
@@ -33,6 +34,7 @@ export class weatherBackground extends HTMLElement {
     #sceneComponents // Components of svg scene obj.  forest, sun, moon etc.
     #celestialController 
     #moodController
+    #cloudController
     #actualTime
 
     constructor() {
@@ -73,6 +75,7 @@ export class weatherBackground extends HTMLElement {
 
         this.#celestialController = new skyCelestialController(this)
         this.#moodController = new moodController(this)
+        this.#cloudController = new cloudController(this)
         this.#actualTime = new TimeCounter()
 
         this._resolveReady = null;
@@ -99,14 +102,15 @@ export class weatherBackground extends HTMLElement {
         if (!svg_scene) return;
 
         svg_scene.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+     
 
         //Choosing elements from svg scene
         this.#sceneComponents = {
             arc: box.querySelector('#curve path'),
             sun: box.querySelector('#sun'),
             moon: box.querySelector('#moon'),
-            clouds: box.querySelectorAll('#cloud1'),
-            rain:box.querySelectorAll('.rain'),
+            clouds: box.querySelector('#clouds').querySelectorAll('g'),
+            rain: box.querySelectorAll('.rain'),
             snow: box.querySelectorAll('.snow'),
             fog: box.querySelectorAll('.fog'),
         } 
@@ -121,11 +125,12 @@ export class weatherBackground extends HTMLElement {
 
         if (!this.#sceneComponents.arc || !this.#sceneComponents.sun) return this._queue.push(() => this.updateScene(data));
         
-        this.#sceneState = normalizeDataToState(data, this.#sceneState)
+        this.#sceneState = normalizeDataAndWeatherToState(data, this.#sceneState)
 
         console.log("Scene State: ", this.#sceneState)
         this.#actualTime.updateTime(data?.current_timezone_time)
 
+        this.#cloudController.apply(this.#sceneState, this.#sceneComponents)
         this.#celestialController.apply(this.#sceneState, this.#sceneComponents)
         this.#moodController.apply(this.#sceneState)
 
@@ -156,7 +161,7 @@ function isDayLight(now, sunriseISO, sunsetISO){
     return (now >= sunrise) && (now <= sunset)
 }
 
-function normalizeDataToState(data, prev={}){
+function normalizeDataAndWeatherToState(data, prev={}){
     const current_weather = data?.current_weather ?? {};
     const daily = data?.daily ?? {};
     const hourly = data?.hourly ?? {};
@@ -182,8 +187,9 @@ function normalizeDataToState(data, prev={}){
     return {
         ...prev,
         code,
-        windspeed: Number(current_weather.windspeed ?? 0),
-        hummidity: null,
+        wind: {
+            speed: Number(current_weather.windspeed ?? 0),
+        },
         sunTimeISO: {
             sunriseISO,
             sunsetISO
