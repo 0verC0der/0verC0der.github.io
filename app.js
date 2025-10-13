@@ -1,4 +1,4 @@
-import { WeatherBackground } from './components/classWeatherBackground.js'
+import { weatherBackground } from './components/weatherBackground.js';
 import {FORECAST} from './api/weatherApi.js'
 import {TIME_BY_TIMEZONE} from './api/timeApi.js';
 import { GEO_API_URL, GEO_REV} from './api/geocodeApi.js';

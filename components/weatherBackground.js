@@ -1,6 +1,8 @@
 import { TimeCounter } from "./timeComponent.js";
+import { skyCelestialController } from "../controllers/skyCelestialController.js";
+import { moodController } from "../controllers/moodController.js"
 
-export class WeatherBackground extends HTMLElement {
+export class weatherBackground extends HTMLElement {
 
     static get observedAttributes() { return ['src'] };
    
@@ -9,9 +11,6 @@ export class WeatherBackground extends HTMLElement {
 
     //global scene state
     #sceneState = {
-        clouds:{
-            count: 6
-        },
         wind: {
             speed: 2
         },
@@ -73,8 +72,8 @@ export class WeatherBackground extends HTMLElement {
         <div id="box-scene"></div>`;
 
         this.#celestialController = new skyCelestialController(this)
-        this.#moodController = new MoodController(this)
-         this.#actualTime = new TimeCounter()
+        this.#moodController = new moodController(this)
+        this.#actualTime = new TimeCounter()
 
         this._resolveReady = null;
         this.ready = new Promise(res => (this._resolveReady = res));
@@ -106,12 +105,12 @@ export class WeatherBackground extends HTMLElement {
             arc: box.querySelector('#curve path'),
             sun: box.querySelector('#sun'),
             moon: box.querySelector('#moon'),
-            clouds: box.querySelectorAll('.cloud'),
+            clouds: box.querySelectorAll('#cloud1'),
             rain:box.querySelectorAll('.rain'),
             snow: box.querySelectorAll('.snow'),
             fog: box.querySelectorAll('.fog'),
         } 
-        console.log('Scene components', this.#sceneComponents)
+        console.log('Clouds', this.#sceneComponents.clouds)
         this._resolveReady?.();
         const defFunc = this._queue.splice(0);
         defFunc.forEach(f => f());
@@ -197,124 +196,4 @@ function normalizeDataToState(data, prev={}){
     }
 }
 
-class skyCelestialController{
-    constructor(host){this.host = host;}
-    
-    apply(state, refs) {
-        this.refs = refs;
-        this.#centerAnchor(refs?.sun);
-        this.#centerAnchor(refs?.moon);
-        this.#CelestialTick(state);
-    }
-
-    #centerAnchor(node) { // try to center sun and moon sprite
-        if (!node || node.__anchor) return;
-            node.removeAttribute('transform'); // remove any translate from sprites (node)
-            const b = node.getBBox();
-            node.__anchor = { cx: b.x + b.width / 2, cy: b.y + b.height / 2 };
-    }
-
-    #CelestialTick(state) {
-        if (!state.sunTimeISO || !state.timeNow) return;
-        const now = state.timeNow
-        const { sunriseISO, sunsetISO } = state.sunTimeISO;
-        const progress = this.#checkDayProgress(now, sunriseISO, sunsetISO)
-        state.skyCelestial.progress = progress
-        
-        this.#moveOnArc(this.refs.arc, this.refs.sun, progress)
-        //this.#updateVisibility()
-    }
-
-    #checkDayProgress = (now, sunriseISO, sunsetISO) => {
-        const sunrise = new Date(sunriseISO)
-        const sunset = new Date(sunsetISO)
-        if (sunset <= sunrise) sunset = new Date(sunset.getTime() + 24 * 3600 * 1000);
-        return cutter((now - sunrise) / (sunset - sunrise));
-    }
-
-    #moveOnArc(arc, node, progress) { // move sun or moon on invisible arc
-        const nwProgress = cutter(progress);
-
-        const arcLength = arc.getTotalLength();
-        const Position = arc.getPointAtLength(arcLength * nwProgress);
-
-        const { cx, cy } = node.__anchor;
-
-        let translate = `translate(${Position.x - cx}, ${Position.y - cy})`;
-        node.setAttribute('transform', translate);
-    }
-
-        #updateVisibility(state) {
-        if (!this.refs) return;
-        const sun = this.refs.sun;
-        const moon = this.refs.moon;
-        const isDay = Boolean(state.isDay);
-
-        if (sun) {
-            // Плавно показуємо/ховаємо сонце
-            sun.style.opacity = isDay ? '1' : '0';
-            sun.style.pointerEvents = isDay ? 'auto' : 'none';
-            sun.setAttribute('aria-hidden', isDay ? 'false' : 'true');
-        }
-        if (moon) {
-            // Місяць навпаки
-            moon.style.opacity = isDay ? '0' : '1';
-            moon.style.pointerEvents = isDay ? 'none' : 'auto';
-            moon.setAttribute('aria-hidden', isDay ? 'true' : 'false');
-        }
-    }
-
-}
-
-class MoodController {
-  constructor(host){ this.host = host; }
-  apply(state){
-    const code = state.code ?? 0;
-    const mood = {
-      clear:   { saturate:1.0,  brightness:1.00, contrast:1.00, hue:10 },
-      cloudy:  { saturate:0.75, brightness:0.98, contrast:0.96, hue:0 },
-      overcast:{ saturate:0.45, brightness:0.82, contrast:0.95, hue:10 },
-      rain:    { saturate:0.50, brightness:0.90, contrast:0.96, hue:0 },
-      snow:    { saturate:0.10, brightness:1.08, contrast:0.93, hue:230 },
-      thunder: { saturate:0.35, brightness:0.85, contrast:1.06, hue:220 },
-      fog:     { saturate:0.25, brightness:0.96, contrast:0.88, hue:0, blur:'1px' },
-    };
-    const cls = (c)=>{
-      if (c===0) return 'clear';
-      if ([1,2].includes(c)) return 'cloudy';
-      if (c===3) return 'overcast';
-      if ([45,48].includes(c)) return 'fog';
-      if ([61,63,65,80,81,82,66,67].includes(c)) return 'rain';
-      if ([71,73,75,77,85,86].includes(c)) return 'snow';
-      if ([95,96,99].includes(c)) return 'thunder';
-      return 'cloudy';
-    };
-    const m = mood[cls(code)];
-    const setVars = ({saturate=1, brightness=1, contrast=1, hue=0, blur='0px'})=>{
-      const el = this.host;
-      el.style.setProperty('--sat', String(saturate));
-      el.style.setProperty('--bright', String(brightness));
-      el.style.setProperty('--contrast', String(contrast));
-      el.style.setProperty('--hue', hue + (typeof hue === 'number' ? 'deg':''));
-      el.style.setProperty('--blur', String(blur));
-    };
-    setVars(m);
-  }
-}
-
-class skyColorController{
-    constructor(host){this.host = host}
-
-    apply(state){
-        if (state.isDay){
-            
-        }
-        else{
-
-        }
-    }
-}
-
-const cutter = (x) => Math.max(0, Math.min(1, x));
-
-customElements.define('weather-scene', WeatherBackground);
+customElements.define('weather-scene', weatherBackground);

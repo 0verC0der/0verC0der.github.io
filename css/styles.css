@@ -25,8 +25,15 @@ footer {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    max-width: 400px;
     margin-bottom: 1rem;
+}
+
+#currentTime {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #555;
+    padding: .5rem 1rem;
+    border-radius: .4rem;
 }
 
 header {
