@@ -189,6 +189,7 @@ function normalizeDataAndWeatherToState(data, prev={}){
         code,
         wind: {
             speed: Number(current_weather.windspeed ?? 0),
+            winddirection: Number(current_weather.winddirection ?? 0)
         },
         sunTimeISO: {
             sunriseISO,
