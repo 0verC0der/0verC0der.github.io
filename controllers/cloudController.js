@@ -5,9 +5,10 @@ export class cloudController{
     }
 
     apply(state, refs){
-        this.cloudRefs = refs?.clouds ? Array.from(refs.clouds) : [];
+        this.cloudRefs = refs?.clouds ? Array.from(refs.clouds.querySelectorAll('g')) : [];
+        this.#stopCloudLoop();
         this.sceneState = state
-        this._cloudParent = this.cloudRefs[0].parentElement || null;
+        this._cloudParent = refs.clouds || null;
         this.#initClouds()
     }
 
@@ -19,7 +20,7 @@ export class cloudController{
         minScale: 0.5,
         maxScale: 5,
         baseSpeed: 10, 
-        windFactor: 12,
+        windFactor: 10,
         spawnPadding: 300,
         yRange: {top: 50, bottom: 400},
         countRange: {min: 0, max: 200}
@@ -28,7 +29,6 @@ export class cloudController{
     
     #initClouds(){
         if (!this.cloudRefs || !this.cloudRefs.length) return;
-
         this.#cloudPool = this.cloudRefs.map((node, idx) => {
             node.style.willChange = 'transform, opacity';
             node.dataset._idx = idx;
@@ -107,6 +107,7 @@ export class cloudController{
     #removeClouds(n){ 
         for (let i = 0; i < n; i++){
             const item = this.#cloudPool.pop();
+            this._cloudParent.removeChild(item?.node);
             if (!item) break;
             try {
                 item.remove();
@@ -156,6 +157,8 @@ export class cloudController{
         if (this.#cloudRAF) cancelAnimationFrame(this.#cloudRAF); ;
         this.#cloudRAF = null;
         this.#cloudLastTS = null;
+        this._cloudParent = null;
+        this.#cloudPool = [];
     }
 
     #updateClouds(dt){
@@ -166,12 +169,11 @@ export class cloudController{
 
         const width = (vb && vb.width) ? vb.width : (svg?.clientWidth || 1200);
         const pad = this.#cloudConfig.spawnPadding;
-
         for (let cloud of this.#cloudPool){
             cloud.x += cloud.speed * dt * cloud.direction;
             if (cloud.direction > 0 && cloud.x > width + pad){
                 const newParams = this.#makeCloudParameter(cloud.node);
-                cloud.x = -pad + -width;
+                cloud.x = pad - width;
                 cloud.y = newParams.y;
                 cloud.scale = newParams.scale;
                 cloud.speed = newParams.speed;

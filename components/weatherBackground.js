@@ -109,7 +109,7 @@ export class weatherBackground extends HTMLElement {
             arc: box.querySelector('#curve path'),
             sun: box.querySelector('#sun'),
             moon: box.querySelector('#moon'),
-            clouds: box.querySelector('#clouds').querySelectorAll('g'),
+            clouds: box.querySelector('#clouds'),
             rain: box.querySelectorAll('.rain'),
             snow: box.querySelectorAll('.snow'),
             fog: box.querySelectorAll('.fog'),
