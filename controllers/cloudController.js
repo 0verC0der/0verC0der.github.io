@@ -1,9 +1,13 @@
 export class cloudController{
-    constructor(host){this.host = host}
+    constructor(host){
+        this.host = host
+        this.cloudRefs = []
+    }
 
     apply(state, refs){
-        this.cloudRefs = refs?.clouds || [];
+        this.cloudRefs = refs?.clouds ? Array.from(refs.clouds) : [];
         this.sceneState = state
+        this._cloudParent = this.cloudRefs[0].parentElement || null;
         this.#initClouds()
     }
 
@@ -13,17 +17,21 @@ export class cloudController{
     
     #cloudConfig = {
         minScale: 0.5,
-        maxScale: 2,
+        maxScale: 5,
         baseSpeed: 10, 
         windFactor: 12,
         spawnPadding: 100,
-        yRange: {top: 50, bottom: 300}
+        yRange: {top: 50, bottom: 400},
+        countRange: {min: 0, max: 200}
     }
 
     #initClouds(){
         if (!this.cloudRefs || !this.cloudRefs.length) return;
 
-        this.#cloudPool = Array.from(this.cloudRefs).map((node, idx) => {
+        this.#syncCountToCloudCover();
+    
+
+        this.#cloudPool = this.cloudRefs.map((node, idx) => {
             node.style.willChange = 'transform, opacity';
             node.dataset._idx = idx;
             const params = this.#makeCloudParameter(node, idx);
@@ -36,13 +44,88 @@ export class cloudController{
         this.#startCloudLoop();
     }
 
+    #getCloudCoverPercent(){
+        return this.sceneState.hourly.cloudcover[0] / 100 ?? 0;
+    }
+
+    #desiredCloudCountFromCover(){
+        const cover = this.#getCloudCoverPercent();
+        console.log("DEBUG Cloud cover percent:", cover)    
+        const {min, max} = this.#cloudConfig.countRange;
+        return Math.round(lerp(min, max, cover));
+    }
+
+    #syncCountToCloudCover(){
+        const desiredCount = this.#desiredCloudCountFromCover();
+        console.log("DEBUG Desired cloud count:", desiredCount)
+        console.log("DEBUG ________________________________________")
+        try{
+            if (!this.cloudRefs || !this.cloudRefs.length) {
+                throw new Error("Cloud REFS is empty");   
+        }}
+        catch(e){ 
+            console.warn("Failed to sync cloud count", e)
+            return;
+        }
+
+        const current = this.#countManagedCloudNodes();
+
+        if (current === desiredCount) return;
+        
+        if(desiredCount > current){
+            this.#addClouds(desiredCount - current);    
+        }
+        else {
+            this.#removeClouds(current - desiredCount);
+        }
+    }
+
+    #countManagedCloudNodes(){
+        return this.#cloudPool?.length || 0;
+    }
+
+    #addClouds(n){
+        
+        if (!this.cloudRefs || !this.cloudRefs.length) return;
+
+        for (let i = 0; i < n; i++){
+            const idx = i % this.cloudRefs.length;
+            const proto = this.cloudRefs[idx];
+            const clone = proto.cloneNode(true);
+
+            clone.dataset._idx = this.#cloudPool.length;
+
+            this._cloudParent.appendChild(clone);
+
+            const params = this.#makeCloudParameter(clone, idx);
+
+            this.#applyCloudParameters(clone, params.x, params.y, params.scale);
+            clone.style.opacity = String(params.opacity);
+            clone.style.willChange = 'transform, opacity';
+
+
+            this.#cloudPool.push({node: clone, ...params});
+        } 
+    }
+
+    #removeClouds(n){ 
+        for (let i = 0; i < n; i++){
+            const item = this.#cloudPool.pop();
+            if (!item) break;
+            try {
+                item.remove();
+            }
+            catch(e){ console.warn("Failed to remove cloud node", e)}
+     }
+    }
+
     #makeCloudParameter(node, idx){
         const wind = (this.sceneState?.wind?.speed ?? 2);
         const hummidity = (this.sceneState?.hourly?.relativehumidity_2m && this.sceneState.hourly.relativehumidity_2m.length)
                    ? (this.sceneState.hourly.relativehumidity_2m[0]) : 50;
 
         const rand = Math.random;
-        const scale = clamp( (0.6 * hummidity / 150) * (0.8 + rand() * 0.8), this.#cloudConfig.minScale ?? 0.5, this.#cloudConfig.maxScale ?? 2);
+        const scale = clamp( (0.6 * hummidity / 150) * (0.8 + rand() * 0.8), this.#cloudConfig.minScale, this.#cloudConfig.maxScale);
         const speed = (this.#cloudConfig.baseSpeed ?? 20 + wind * this.#cloudConfig.windFactor) * (0.6 + rand() * 1.2);
         
         const y = lerp(this.#cloudConfig.yRange.top, this.#cloudConfig.yRange.bottom, rand());
@@ -99,7 +182,7 @@ export class cloudController{
                 cloud.opacity = newParams.opacity;
                 cloud.direction = newParams.direction;
             }
-            else if (cloud.dir < 0 && cloud.x < -pad){
+            else if (cloud.direction < 0 && cloud.x < -pad){
                 const newParams = this.#makeCloudParameter(cloud.node);
                 cloud.x = width + pad;
                 cloud.y = newParams.y;
