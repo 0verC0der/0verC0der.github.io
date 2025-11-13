@@ -224,16 +224,31 @@ main {
 	align-items: center;
 	height: 637px;
 	width: 1400px;
-	margin-top: 155px;
+	margin-top: 146px;
 	gap: 20px;
 	padding: 0;
 }
 .weatherMain > :first-child {
 	position: relative;
 	display: flex;
-	background-color: red;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 0;
 	width: 502px;
 	height: 277px;
+}
+#temperature {
+	font-size: 150px;
+	color: #fff;
+	margin: 0;
+	padding: 0;
+}
+#date-string {
+	font-size: 40px;
+	color: #fff;
+	margin: -35px 0 0 0;
+	padding: 0;
 }
 .weatherMain > :nth-child(2) {
 	display: flex;
