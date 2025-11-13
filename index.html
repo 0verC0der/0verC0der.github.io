@@ -1,75 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Weather App</title>
+		<link rel="stylesheet" href="/css/styles.css" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+			rel="stylesheet"
+		/>
+	</head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather App</title>
-    <link rel="stylesheet" href="/css/styles.css">
-</head>
+	<body>
+		<weather-scene id="weather-scene" src="./svg/scene.svg"></weather-scene>
 
-<body>
-    <weather-scene id="weather-scene" src="./svg/scene.svg"></weather-scene>
+		<header>
+			<h1 id="appTitle">Weather App</h1>
+			<div id="searchDiv" class="search-container">
+				<form role="search" id="searchForm" aria-label="Search for a city">
+					<input
+						id="cityInput"
+						type="text"
+						placeholder="Search for a location here ..."
+						autocomplete="off"
+						role="combobox"
+						aria-autocomplete="list"
+						aria-expanded="false"
+						aria-controls="cityListbox"
+						aria-activedescendant=""
+						aria-describedby="comboHint liveStatus"
+						aria-label="City name"
+					/>
+					<div id="button-absoute-block">
+						<button id="search-btn" class="primary">
+							<img src="/svg/SearchIcon.svg" />
+						</button>
+					</div>
 
-    <header>
-        <h1 id="appTitle">Weather App</h1>
-        <div id="searchDiv" class="search-container">
-            <form role="search" id="searchForm" aria-label="Search for a city">
-                <input id="cityInput" type="text" placeholder="Enter city name" autocomplete="off" role="combobox"
-                    aria-autocomplete="list" aria-expanded="false" aria-controls="cityListbox" aria-activedescendant=""
-                    aria-describedby="comboHint liveStatus" aria-label="City name">
-                <ul id="cityListbox" role="listbox" class="listbox" hidden></ul>
-                <button id="search-btn" class="primary">Search</button>
-                <div id="comboHint" class="sr-only"></div>
-                <div id="liveStatus" class="sr-only" aria-live="polite"></div>
-            </form>
-        </div>
-        <nav class="language-selector" aria-label="Language Selector">
-            <button id="lang-uk-btn" aria-pressed="false">uk</button>
-            <button id="lang-en-btn" aria-pressed="true">en</button>
-        </nav>
-    </header>
-    
-    <main>
-        <div class="underheader">
-            <div id="currentGeoLocationDiv">
-                <h2 id="cityName"><strong>--</strong></h2>
-                <button id="geoloc-btn" class="secondary">Geolocation</button>
-            </div>
-            <div id="currentTime" class="currentTime">12:00</div>
-        </div>
-        
-        
-        <div class="weatherMain">
-            <img id="weatherIcon" src="" alt="Weather-Icon" >
-            <div id="weatherInfoDiv" class="card">
-                <p id="temperature">Temperature:</p>
-                <p id="tempValue">--°C</p>
-                <p id="humidity">Humidity:</p>
-                <p id="humidityValue">--%</p>
-                <p id="windSpeed">Wind Speed:</p>
-                <p id="windSpeedValue">-- m/s</p>
-                <p id="description">Description:</p>
-                <p id="descriptionValue">--</p>
-            </div>
-        </div>
-        <section id="forecastSection">
-            <h3 id='forecastTitle'>5-Day Forecast</h3>
-            <div id="forecastDiv">
-                <div id="forecastContainer" class="forecastContainer">
-                    <!-- Forecast items will be dynamically added here -->
-                </div>
-            </div>
-        </section>
+					<ul id="cityListbox" role="listbox" class="listbox" hidden></ul>
 
-    </main>
-    <footer>
-        <noscript>Для роботи застосунку потрібен JavaScript.</noscript>
-    </footer>
+					<div id="comboHint" class="sr-only"></div>
+					<div id="liveStatus" class="sr-only" aria-live="polite"></div>
+				</form>
+			</div>
+			<nav class="language-selector" aria-label="Language Selector">
+				<button id="lang-uk-btn" aria-pressed="false">uk</button>
+				<span>|</span>
+				<button id="lang-en-btn" aria-pressed="true">en</button>
+			</nav>
+		</header>
 
+		<main>
+			<div class="underheader">
+				<div id="currentGeoLocationDiv">
+					<h2 id="cityName"><strong>--</strong></h2>
+					<button id="geoloc-btn" class="secondary">Geolocation</button>
+				</div>
+				<div id="currentTime" class="currentTime">12:00</div>
+			</div>
 
-    <script type='module' src="/app.js"></script>
+			<div class="weatherMain">
+				<img id="weatherIcon" src="" alt="Weather-Icon" />
+				<div id="weatherInfoDiv" class="card">
+					<p id="temperature">Temperature:</p>
+					<p id="tempValue">--°C</p>
+					<p id="humidity">Humidity:</p>
+					<p id="humidityValue">--%</p>
+					<p id="windSpeed">Wind Speed:</p>
+					<p id="windSpeedValue">-- m/s</p>
+					<p id="description">Description:</p>
+					<p id="descriptionValue">--</p>
+				</div>
+			</div>
+			<section id="forecastSection">
+				<h3 id="forecastTitle">5-Day Forecast</h3>
+				<div id="forecastDiv">
+					<div id="forecastContainer" class="forecastContainer">
+						<!-- Forecast items will be dynamically added here -->
+					</div>
+				</div>
+			</section>
+		</main>
+		<footer>
+			<noscript>Для роботи застосунку потрібен JavaScript.</noscript>
+		</footer>
 
-</body>
-
+		<script type="module" src="/app.js"></script>
+	</body>
 </html>
