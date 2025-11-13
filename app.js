@@ -106,7 +106,6 @@ function applyI18n() {
 	html.lang = lang
 	titleEl.textContent = currentLang.title
 	inputEl.placeholder = currentLang.placeholder
-	geoLocBtn.textContent = currentLang.geoloc
 	forecastTitle.textContent = currentLang.forecast
 	temperature.textContent = `${currentLang.temp}: `
 	humidity.textContent = `${currentLang.humidity}: `

@@ -18,6 +18,7 @@
 
 		<header>
 			<h1 id="appTitle">Weather App</h1>
+
 			<div id="searchDiv" class="search-container">
 				<form role="search" id="searchForm" aria-label="Search for a city">
 					<input
@@ -38,6 +39,9 @@
 							<img src="/svg/SearchIcon.svg" />
 						</button>
 					</div>
+					<button id="geoloc-btn" class="secondary">
+						<img src="/svg/GeoIcon.svg" alt="" />
+					</button>
 
 					<ul id="cityListbox" role="listbox" class="listbox" hidden></ul>
 
@@ -45,6 +49,7 @@
 					<div id="liveStatus" class="sr-only" aria-live="polite"></div>
 				</form>
 			</div>
+
 			<nav class="language-selector" aria-label="Language Selector">
 				<button id="lang-uk-btn" aria-pressed="false">uk</button>
 				<span>|</span>
@@ -56,7 +61,6 @@
 			<div class="underheader">
 				<div id="currentGeoLocationDiv">
 					<h2 id="cityName"><strong>--</strong></h2>
-					<button id="geoloc-btn" class="secondary">Geolocation</button>
 				</div>
 				<div id="currentTime" class="currentTime">12:00</div>
 			</div>
