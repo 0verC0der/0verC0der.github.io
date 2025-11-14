@@ -304,19 +304,46 @@ main {
 	left: 50%;
 	transform: translate(-50%, -50%);
 }
-#test-2 {
+#Weather-type {
 	display: flex;
-	background-color: rgb(233, 123, 14);
-	width: 50%;
-	height: 86%;
+	flex-direction: column;
+	width: 45%;
+	height: 80%;
+	padding: 12px;
 }
-#test-3 {
+#Weather-type img {
+	width: 168px;
+	height: 168px;
+	object-fit: contain;
+}
+#Weather-type p {
+	font-size: 32px;
+	color: #fff;
+	margin: 20px 0 0 0;
+}
+#brief-info-block {
 	display: flex;
-	background-color: rgb(69, 162, 224);
-	width: 50%;
-	height: 86%;
+	flex-direction: column;
+	width: 45%;
+	height: 80%;
+	padding: 12px;
+	color: #fff;
+	font-size: 36px;
 }
-
+#brief-info-block img {
+	width: 44px;
+	height: 44px;
+	object-fit: contain;
+	vertical-align: -0.2em;
+	margin-right: 12px;
+}
+#brief-info-block p {
+	margin: 0 0 10px 0;
+	padding: 0;
+}
+#brief-info-block > :first-child {
+	font-size: 40px;
+}
 .weatherMain > :nth-child(2) > :first-child > :first-child {
 	display: flex;
 	position: relative;
