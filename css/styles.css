@@ -58,8 +58,8 @@ header {
 	z-index: 100;
 }
 #cityInput {
-	font-size: 16px;
-	padding: 0.5rem 1rem;
+	font-size: 23px;
+	padding: 0.5rem 1.5rem;
 	border: rgba(255, 255, 255, 0.3) 2px solid;
 	border-radius: 50px;
 	background-color: rgba(255, 255, 255, 0.3);
@@ -211,7 +211,6 @@ main {
 }
 #currentTime {
 	font-size: 42px;
-	font-weight: bold;
 	color: #fff;
 	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -343,16 +342,77 @@ main {
 #brief-info-block > :first-child {
 	font-size: 40px;
 }
-.weatherMain > :nth-child(2) > :first-child > :first-child {
+/*блок з погодою погодинно*/
+.slider-wrapper {
 	display: flex;
 	position: relative;
 	background-color: rgb(42, 42, 42, 0.2);
 	border-radius: 20px;
 	border: rgb(255, 255, 255, 0.15) 2px solid;
 	backdrop-filter: blur(10px);
-	width: 100%;
+	width: 95%;
 	height: 180px;
+	align-items: center;
+	gap: 20px;
+	padding: 0 20px;
 }
+.slider {
+	display: flex;
+	overflow-x: auto;
+	gap: 30px;
+	scroll-behavior: smooth; /* плавна прокрутка */
+	scrollbar-width: none; /* firefox — сховати скролбар (опц.) */
+}
+.slider::-webkit-scrollbar {
+	display: none;
+} /* chrome/safari */
+
+.item {
+	min-width: 80px;
+	max-height: 144px;
+	padding: 0;
+	color: #fff;
+	text-align: center;
+	flex-shrink: 0;
+	font-size: 20px;
+}
+.item p {
+	padding: 0;
+	margin: 0;
+	text-align: center;
+}
+.item > :nth-child(3) {
+	font-size: 18px;
+}
+
+.item img {
+	width: 50px;
+	height: 50px;
+	object-fit: contain;
+	padding: 12px;
+	background-color: rgba(217, 217, 217, 0.05);
+	border: rgb(255, 255, 255, 0.2) 2px solid;
+	border-radius: 50%;
+}
+
+.scroll-btn {
+	border: none;
+	position: relative;
+	background: none;
+	width: 30px;
+	height: 40px;
+	cursor: pointer;
+}
+.scroll-btn img {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+/*-------------*/
 .extended-info {
 	display: flex;
 	position: relative;
@@ -426,11 +486,6 @@ main {
 	max-width: 400px;
 }
 
-.weatherMain img {
-	width: 256px;
-	height: 256px;
-}
-
 .forecastContainer {
 	display: none;
 	flex-direction: row;
@@ -472,23 +527,18 @@ main {
 .icon-hide {
 	opacity: 0;
 }
-
 .hidden-btn .icon-show {
 	opacity: 0;
 }
 .hidden-btn .icon-hide {
 	opacity: 1;
 }
-
 .anim-block {
 	transition: transform 0.4s ease, opacity 0.4s ease;
 }
-
-/* Коли ховаємо */
 .hidden .anim-block {
 	opacity: 0;
 }
-
 /* Кожен напрямок */
 .hidden .anim-block[data-dir='up'] {
 	transform: translateY(-40px);

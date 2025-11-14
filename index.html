@@ -74,12 +74,74 @@
 
 			<section class="weatherMain anim-block" data-dir="down">
 				<div>
-					<p id="temperature">18°C</p>
+					<p id="temperature">+18°C</p>
 					<p id="date-string">Wednesday Sep 24 2025</p>
 				</div>
 				<div>
 					<div>
-						<div></div>
+						<div class="slider-wrapper">
+							<button class="scroll-btn left" id="btn-left">
+								<img src="/svg/scroll-btn-left.svg" alt="" />
+							</button>
+
+							<div class="slider" id="slider">
+								<div class="item">
+									<img src="/svg/Sunny.svg" alt="" />
+									<p>1:00 PM</p>
+									<p>+18 °C</p>
+								</div>
+								<div class="item">
+									<img src="/svg/Sunny.svg" alt="" />
+									<p>2:00 PM</p>
+									<p>+18 °C</p>
+								</div>
+								<div class="item">
+									<img src="/svg/Sunny.svg" alt="" />
+									<p>3:00 PM</p>
+									<p>+18 °C</p>
+								</div>
+								<div class="item">
+									<img src="/svg/Cloudy-clear at times.svg" alt="" />
+									<p>4:00 PM</p>
+									<p>+12 °C</p>
+								</div>
+								<div class="item">
+									<img src="/svg/Cloudy-clear at times.svg" alt="" />
+									<p>5:00 PM</p>
+									<p>+10 °C</p>
+								</div>
+								<div class="item">
+									<img src="/svg/Cloudy-clear at times.svg" alt="" />
+									<p>6:00 PM</p>
+									<p>+8 °C</p>
+								</div>
+								<div class="item">
+									<img src="/svg/Sunny.svg" alt="" />
+									<p>7:00 PM</p>
+									<p>+14 °C</p>
+								</div>
+								<div class="item">
+									<img src="/svg/Sunny.svg" alt="" />
+									<p>8:00 PM</p>
+									<p>+30 °C</p>
+								</div>
+								<div class="item">
+									<img src="/svg/Sunny.svg" alt="" />
+									<p>9:00 PM</p>
+									<p>+18 °C</p>
+								</div>
+								<div class="item">
+									<img src="/svg/Sunny.svg" alt="" />
+									<p>10:00 PM</p>
+									<p>+18 °C</p>
+								</div>
+							</div>
+
+							<button class="scroll-btn right" id="btn-right">
+								<img src="/svg/scroll-btn-right.svg" alt="" />
+							</button>
+						</div>
+
 						<div class="extended-info">
 							<div>
 								<img src="/svg/Cloudy-clear at times.svg" alt="" />
@@ -163,5 +225,6 @@
 
 		<script type="module" src="/app.js"></script>
 		<script type="module" src="/Show-hide-animation.js"></script>
+		<script type="module" src="/scrollbar-animation.js"></script>
 	</body>
 </html>
