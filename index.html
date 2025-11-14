@@ -16,7 +16,7 @@
 	<body>
 		<weather-scene id="weather-scene" src="./svg/scene.svg"></weather-scene>
 
-		<header>
+		<header class="anim-block" data-dir="up">
 			<h1 id="appTitle">Weather App</h1>
 
 			<div id="searchDiv" class="search-container">
@@ -59,7 +59,7 @@
 
 		<main>
 			<div class="underheader">
-				<div id="currentGeoLocationDiv">
+				<div id="currentGeoLocationDiv" class="anim-block" data-dir="left">
 					<img
 						id="locationIcon"
 						src="/svg/LocateIcon.svg"
@@ -67,10 +67,12 @@
 					/>
 					<h2 id="cityName">--</h2>
 				</div>
-				<div id="currentTime" class="currentTime">12:00</div>
+				<div id="currentTime" class="anim-block currentTime" data-dir="right">
+					12:00
+				</div>
 			</div>
 
-			<section class="weatherMain">
+			<section class="weatherMain anim-block" data-dir="down">
 				<div>
 					<p id="temperature">18°C</p>
 					<p id="date-string">Wednesday Sep 24 2025</p>
@@ -117,6 +119,21 @@
 				</div>
 			</section>
 
+			<div id="absoute-block">
+				<button id="toggle-btn">
+					<img
+						class="icon icon-show"
+						src="/svg/icons8-показать-48.png"
+						alt=""
+					/>
+					<img
+						class="icon icon-hide"
+						src="svg/icons8-invisible-48.png"
+						alt=""
+					/>
+				</button>
+			</div>
+
 			<div id="weatherMain">
 				<img id="weatherIcon" src="" alt="Weather-Icon" />
 				<div id="weatherInfoDiv" class="card">
@@ -130,7 +147,6 @@
 					<p id="descriptionValue">--</p>
 				</div>
 			</div>
-
 			<section id="forecastSection">
 				<h3 id="forecastTitle">5-Day Forecast</h3>
 				<div id="forecastDiv">
@@ -146,5 +162,6 @@
 		</footer>
 
 		<script type="module" src="/app.js"></script>
+		<script type="module" src="/Show-hide-animation.js"></script>
 	</body>
 </html>
