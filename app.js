@@ -107,7 +107,6 @@ function applyI18n() {
 	titleEl.textContent = currentLang.title
 	inputEl.placeholder = currentLang.placeholder
 	forecastTitle.textContent = currentLang.forecast
-	temperature.textContent = `${currentLang.temp}: `
 	humidity.textContent = `${currentLang.humidity}: `
 	windSpeed.textContent = `${currentLang.wind}: `
 	description.textContent = `${currentLang.desc}: `
