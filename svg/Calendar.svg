@@ -1,0 +1,22 @@
+<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Calendar">
+<rect id="Rectangle 30" x="1.5" y="3.95453" width="33" height="29.7273" rx="4.5" stroke="white" stroke-width="3"/>
+<line id="Line 2" x1="0.818115" y1="11.0909" x2="34.3636" y2="11.0909" stroke="white" stroke-width="4"/>
+<line id="Line 3" x1="7.22729" x2="7.22729" y2="8.18182" stroke="white" stroke-width="3"/>
+<line id="Line 4" x1="29.3181" x2="29.3181" y2="8.18182" stroke="white" stroke-width="3"/>
+<rect id="Rectangle 31" x="4.90918" y="15.5454" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+<rect id="Rectangle 36" x="4.90918" y="21.2727" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+<rect id="Rectangle 41" x="4.90918" y="27" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+<rect id="Rectangle 32" x="10.6365" y="15.5454" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+<rect id="Rectangle 37" x="10.6365" y="21.2727" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+<rect id="Rectangle 42" x="10.6365" y="27" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+<rect id="Rectangle 33" x="16.3635" y="15.5454" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+<rect id="Rectangle 38" x="16.3635" y="21.2727" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+<rect id="Rectangle 43" x="16.3635" y="27" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+<rect id="Rectangle 34" x="22.0908" y="15.5454" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+<rect id="Rectangle 39" x="22.0908" y="21.2727" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+<rect id="Rectangle 44" x="22.0908" y="27" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+<rect id="Rectangle 35" x="27.8181" y="15.5454" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+<rect id="Rectangle 40" x="27.8181" y="21.2727" width="3.27273" height="3.27273" fill="#D9D9D9"/>
+</g>
+</svg>
